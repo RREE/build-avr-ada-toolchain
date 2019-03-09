@@ -1,0 +1,23 @@
+Description: use makeinfo instead of texi2html
+ Orphaned texi2html got superseded by makeinfo. 
+Author: Milan Kupcevic <milan@debian.org>
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -37,11 +37,11 @@
+ 
+ all-local: info html ps pdf
+ 
+-html: avrdude-html/avrdude.html
++html: avrdude-html/index.html
+ 
+-avrdude-html/avrdude.html: $(srcdir)/$(info_TEXINFOS) $(GENERATED_TEXINFOS)
+-	texi2html -split_node $(srcdir)/$(info_TEXINFOS)
+-	if [ -e ./avrdude.html -o -e ./avrdude_1.html ]; then \
++avrdude-html/index.html: $(srcdir)/$(info_TEXINFOS) $(GENERATED_TEXINFOS)
++	makeinfo --html --split=node $(srcdir)/$(info_TEXINFOS)
++	if [ -e ./index.html -o -e ./avrdude_1.html ]; then \
+ 	 mkdir -p avrdude-html ; \
+ 	 mv -f *.html avrdude-html ; \
+ 	else \

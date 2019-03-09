@@ -1,0 +1,39 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Fri, 14 Mar 2014 15:25:04 +0100
+Subject: Fix paths in the man page
+
+Update the man page to point to the correct location of the
+documentation and config file when installed on a Debian system.
+---
+ avrdude.1 | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/avrdude.1
++++ b/avrdude.1
+@@ -294,7 +294,7 @@
+ .Nm avrdude
+ knows about.
+ See the config file, located at
+-.Pa ${PREFIX}/etc/avrdude.conf ,
++.Pa /etc/avrdude.conf ,
+ which contains a description of the format.
+ .Pp
+ If 
+@@ -1053,7 +1053,7 @@
+ .It Pa /dev/ppi0
+ default device to be used for communication with the programming
+ hardware
+-.It Pa ${PREFIX}/etc/avrdude.conf
++.It Pa /etc/avrdude.conf
+ programmer and parts configuration file
+ .It Pa ${HOME}/.avrduderc
+ programmer and parts configuration file (per-user overrides)
+@@ -1061,7 +1061,7 @@
+ Initialization file for the
+ .Xr readline 3
+ library
+-.It Pa ${PREFIX}/share/doc/avrdude/avrdude.pdf
++.It Pa /usr/share/doc/avrdude-doc/avrdude.pdf
+ Schematic of programming hardware
+ .El
+ .\" .Sh EXAMPLES

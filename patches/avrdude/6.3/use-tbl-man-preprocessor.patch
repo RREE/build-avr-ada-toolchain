@@ -1,0 +1,12 @@
+Description: use tbl man preprocessor
+ Explicitly request tbl preprocessor, make lintian happy.
+Author: Milan Kupcevic <milan@debian.org>
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/avrdude.1
++++ b/avrdude.1
+@@ -1,3 +1,4 @@
++'\" t
+ .\"
+ .\" avrdude - A Downloader/Uploader for AVR device programmers
+ .\" Copyright (C) 2001, 2002, 2003, 2005 - 2016  Joerg Wunsch

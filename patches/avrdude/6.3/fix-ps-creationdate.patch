@@ -1,0 +1,22 @@
+Description: set reproducible postscript CreationDate field
+ Reporducible builds project support, see:
+ http://wiki.debian.org/ReproducibleBuilds/
+Author: Milan Kupcevic <milan@debian.org>
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/doc/Makefile.am
++++ b/doc/Makefile.am
+@@ -52,6 +52,13 @@
+ $(builddir)/avrdude.dvi: $(GENERATED_TEXINFOS)
+ $(builddir)/avrdude.pdf: $(GENERATED_TEXINFOS)
+ 
++.dvi.ps:
++	$(AM_V_DVIPS)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
++	$(DVIPS) $(AM_V_texinfo) -o $@.tmp $<
++	printf "[ /CreationDate (%s)\n/DOCINFO pdfmark\n" "`date -u -r ../debian/changelog +%Y-%m-%dT%H:%M:%SZ`" > $@.mark
++	gs -q -dBATCH -dNOPAUSE -sDEVICE=ps2write -sOutputFile=$@ $@.tmp $@.mark
++	rm -f $@.mark $@.tmp
++
+ # if it does not exist make this first
+ ../avrdude$(EXEEXT):
+ 	$(MAKE) -C .. avrdude$(EXEEXT)
