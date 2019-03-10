@@ -33,8 +33,9 @@ uninstall: uninstall_rts
 #
 #  Config
 #
--include ../config # will not be found for recursive execution in rts/$(MCU)/{adainclude,adalib}
-
+# -include ../config # will not be found for recursive execution in rts/$(MCU)/{adainclude,adalib}
+LIBGCC := $(shell avr-gcc -print-libgcc-file-name)
+RTS_BASE := $(dir $(LIBGCC))
 
 ###############################################################
 #
@@ -164,18 +165,13 @@ clean_rts:
 #
 #  Install
 #
-ifndef RTS_BASE
-install_rts:
-	$(error cannot install until 'configure' has been run)
-else
 install_rts: build_rts uninstall_rts
 	$(CP) -a $(ARCH_LIST) $(RTS_BASE)
-	-$(MKDIR) $(RTS_BASE)/adainclude
-	-$(MKDIR) $(RTS_BASE)/adalib
-	-$(CP) adainclude/system.ads $(RTS_BASE)/adainclude
-	-$(CP) README.gnatlink_inst  $(RTS_BASE)/adainclude
-	-$(CP) README.gprconfig      $(RTS_BASE)/adalib
-endif
+	-$(INSTALL) -d $(RTS_BASE)/adainclude
+	-$(INSTALL) -d $(RTS_BASE)/adalib
+	-$(INSTALL) adainclude/system.ads $(RTS_BASE)/adainclude
+	-$(INSTALL) README.gnatlink_inst  $(RTS_BASE)/adainclude
+	-$(INSTALL) README.gprconfig      $(RTS_BASE)/adalib
 
 .PHONY: install_rts
 
@@ -184,10 +180,6 @@ endif
 #
 #  Uninstall
 #
-ifndef RTS_BASE
-uninstall_rts:
-	$(error cannot uninstall until 'configure' has been run)
-else
 uninstall_rts:
 	$(RM) $(RTS_BASE)/ada_source_path
 	$(RM) $(RTS_BASE)/ada_object_path
@@ -196,7 +188,6 @@ uninstall_rts:
 	   rm -rf $(RTS_BASE)/$$arch/adainclude; \
 	   rm -rf $(RTS_BASE)/$$arch/adalib; \
 	done
-endif
 
 .PHONY: uninstall_rts
 
