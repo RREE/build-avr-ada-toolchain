@@ -44,8 +44,6 @@ function check_return_code () {
 
 function unpack_package ()
 {
-    set -x
-    
     local PKG="$1_TAR"
     local X="$1_X"
     
@@ -69,9 +67,10 @@ function apply_patches ()
 	echo "  >> Patching $PKG..."
 	SERIES=`(cd $PATCH_DIR; ls -1 *.patch)`
 	local STRIP=`cat $PATCH_DIR/strip`
+
 	for p in $SERIES; do
  	    display "   $p"
-	    patch --verbose --strip=$STRIP --input=$PATCH_DIR/$p 2>&1 
+	    patch --verbose --strip=$STRIP --input=$PATCH_DIR/$p
 	    check_return_code
 	done
     fi

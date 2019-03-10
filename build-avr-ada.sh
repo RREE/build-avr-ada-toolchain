@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #--------------------------------------------------------------------------
-#-                AVR-Ada - A GCC Ada environment for AVR-Atmel          --
+#-     AVR-Ada - A GCC Ada environment for Microchip AVR8 (Ex-Atmel)     --
 #-                                      *                                --
 #-                                 AVR-Ada 2.0.0                         --
-#-               Copyright (C) 2005, 2007, 2012, 2016, 2019 Rolf Ebert   --
+#-           Copyright (C) 2005, 2007, 2012, 2016, 2019 Rolf Ebert       --
 #-                     Copyright (C) 2009 Neil Davenport                 --
 #-                     Copyright (C) 2005 Stephane Riviere               --
 #-                     Copyright (C) 2003-2005 Bernd Trog                --
@@ -36,23 +36,6 @@
 #-                                                                       --
 #--------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------
-# Under Windows XP, you need :
-#
-# MinGW-5.1.6.exe (Windows installer).
-# MSYS-1.0.10.exe (Windows installer).
-# msysCORE-1.0.11-<latestdate>
-# msysDTK-1.0.1.exe (Windows installer).
-# flex-2.5.35-MSYS-1.0.11-1
-# bison-2.4.2-MSYS-1.0.11-1
-# regex-0.12-MSYS-1.0.11-1
-# gettext-0.16.1-1
-# tar-1.13.19-MSYS-2005.06.08
-# autoconf 2.59
-# automake 1.8.2
-# wget
-# cvs
-#
 #---------------------------------------------------------------------------
 #
 # $DOWNLOAD  : should point to directory which contains the files
@@ -107,14 +90,14 @@ AVRADA_LIBC_DIR="$AVRADA_PATCHES/avr-libc/$VER_LIBC"
 # actions:
 download_files="yes"
 delete_obj_dirs="no"
-delete_build_dir="no"
+delete_build_dir="yes"
 delete_install_dir="no"
 build_binutils="no"
-build_gcc="no"
+build_gcc="yes"
 build_mpfr="no"
 build_mpc="no"
 build_gmp="no"
-build_libc="no"
+build_libc="yes"
 build_avrada="no"
 build_avrdude="yes"
 
@@ -237,31 +220,22 @@ cd $AVR_BUILD
 #---------------------------------------------------------------------------
 
 if test "x$build_binutils" = "xyes" ; then
-   #########################################################################
+
     header "Building Binutils"
 
     if test "x$no_extract" != "xyes" ; then
 	unpack_package BINUTILS
     fi
 
-
     if test "x$no_patch" != "xyes" ; then
-
-        display "patching binutils"
-
         cd $AVR_BUILD/$FILE_BINUTILS
-        for p in $BIN_PATCHES; do
-            display "   $p"
-            patch --verbose --strip=0 --input=$AVRADA_BIN_DIR/$p  2>&1 >> $AVR_BUILD/build.log
-            check_return_code
-        done
+        apply_patches BINUTILS > $AVR_BUILD/step10_bin_patch.log
     fi
 
     mkdir $AVR_BUILD/binutils-obj
-
     cd $AVR_BUILD/binutils-obj
 
-    display "Configure binutils ... (log in $AVR_BUILD/step01_bin_configure.log)"
+    display "Configure binutils ... (log in $AVR_BUILD/step11_bin_configure.log)"
 
     case "$OS" in
         "Linux" | "Darwin" )
@@ -273,32 +247,41 @@ if test "x$build_binutils" = "xyes" ; then
         --prefix=$PREFIX \
         --target=avr \
         --disable-nls \
+        --disable-shared \
+        --disable-threads \
+        --enable-cloog-backend=isl \
+        --disable-cloog-version-check \
+        --disable-isl-version-check \
+        --disable-ppl-version-check \
+        --with-gcc \
+        --with-gnu-as \
+        --with-gnu-ld \
+        --enable-multilib \
         --enable-doc \
         --disable-werror \
         $BINUTILS_OPS \
-        &>$AVR_BUILD/step01_bin_configure.log
+        &>$AVR_BUILD/step11_bin_configure.log
     check_return_code
 
 
-    display "Make binutils bfd-headers ... (log in $AVR_BUILD/step02_bin_make.log)"
-    make all-bfd TARGET-bfd=headers &>$AVR_BUILD/step02.0_bin_make_bfd_headers.log
+    display "Make binutils bfd-headers ... (log in $AVR_BUILD/step12_bin_make.log)"
+    make all-bfd TARGET-bfd=headers &>$AVR_BUILD/step12_bin_make_bfd_headers.log
     rm -f bfd/Makefile
-    make configure-host             &>$AVR_BUILD/step02.1_bin_configure.log
+    make configure-host             &>$AVR_BUILD/step13_bin_configure.log
     check_return_code
 
-    make all                        &>$AVR_BUILD/step02.2_bin_make_all.log
+    make all                        &>$AVR_BUILD/step14_bin_make_all.log
     check_return_code
 
-    display "Install binutils ...   (log in $AVR_BUILD/step03_bin_install.log)"
-
-    make install &>$AVR_BUILD/step03_bin_install.log
+    display "Install binutils ...   (log in $AVR_BUILD/step18_bin_install.log)"
+    make install &>$AVR_BUILD/step18_bin_install.log
     check_return_code
 fi
 
 #---------------------------------------------------------------------------
 
 if test "$build_gcc" = "yes" ; then
-    #########################################################################
+
     header "Building gcc cross compiler for AVR"
 
     cd $AVR_BUILD
@@ -334,26 +317,14 @@ if test "$build_gcc" = "yes" ; then
         true
         # do nothing
     else
-        display "patching gcc"
-
         cd $AVR_BUILD/$FILE_GCC
-        for p in $GCC_PATCHES; do
-            display "   $p"
-            if test -f $AVRADA_GCC_DIR/$p ; then
-                PDIR=$AVRADA_GCC_DIR
-            else
-                display "cannot find $p in any of the patch directories"
-                exit 2
-            fi
-            patch --verbose --strip=0 --input=$PDIR/$p  2>&1 >> $AVR_BUILD/build.log
-            check_return_code
-        done
+        apply_patches GCC        >& $AVR_BUILD/step20_gcc_patch.log
     fi
 
     mkdir $AVR_BUILD/gcc-obj
     cd $AVR_BUILD/gcc-obj
 
-    display "Configure GCC-AVR ... (log in $AVR_BUILD/step04_gcc_configure.log)"
+    display "Configure GCC-AVR ... (log in $AVR_BUILD/step21_gcc_configure.log)"
 
     echo "AVR-Ada V$VER_AVRADA" > ../$FILE_GCC/gcc/PKGVERSION
 
@@ -367,25 +338,25 @@ if test "$build_gcc" = "yes" ; then
         --with-bugurl=http://avr-ada.sourceforge.net \
 	--with-gmp=$WITHGMP \
 	--with-mpfr=$WITHMPFR \
-        &>$AVR_BUILD/step04_gcc_configure.log
+        &>$AVR_BUILD/step21_gcc_configure.log
     check_return_code
 
-    display "Make GCC/GNAT ...     (log in $AVR_BUILD/step05_gcc_gcc_obj.log)"
-    make &> $AVR_BUILD/step05_gcc_gcc_obj.log
+    display "Make GCC/GNAT ...     (log in $AVR_BUILD/step22_gcc_gcc_obj.log)"
+    make &> $AVR_BUILD/step22_gcc_gcc_obj.log
     check_return_code
 
-    display "Make GNAT Tools ...   (log in $AVR_BUILD/step06_gcc_tools_obj.log)"
-    make -C gcc cross-gnattools ada.all.cross &> $AVR_BUILD/step06_gcc_gcc_obj.log
+    display "Make GNAT Tools ...   (log in $AVR_BUILD/step23_gcc_tools_obj.log)"
+    make -C gcc cross-gnattools ada.all.cross &> $AVR_BUILD/step23_gcc_gcc_obj.log
     check_return_code
 
-    #display "Make RTS ...          (log in $AVR_BUILD/step06_gcc_rts_obj.log)"
-    #make -C gcc gnatlib &> $AVR_BUILD/step06_gcc_rts_obj.log
+    #display "Make RTS ...          (log in $AVR_BUILD/step24_gcc_rts_obj.log)"
+    #make -C gcc gnatlib &> $AVR_BUILD/step24_gcc_rts_obj.log
     #check_return_code
 
-    display "Install GCC ...       (log in $AVR_BUILD/step08_gcc_install.log)"
+    display "Install GCC ...       (log in $AVR_BUILD/step28_gcc_install.log)"
 
     cd $AVR_BUILD/gcc-obj
-    make install &>$AVR_BUILD/step08_gcc_install.log
+    make install &>$AVR_BUILD/step28_gcc_install.log
     check_return_code
 fi
 
@@ -398,21 +369,22 @@ if test "x$build_libc" = "xyes" ; then
 
     cd $AVR_BUILD
 
-    display "Extracting $DOWNLOAD/$FILE_LIBC.tar.bz2 ..."
-    bunzip2 -c $DOWNLOAD/$FILE_LIBC.tar.bz2 | tar xf -
+    unpack_package LIBC
 
     cd $AVR_BUILD/$FILE_LIBC
 
-    display "configure AVR-LIBC ... (log in $AVR_BUILD/step09_libc_conf.log)"
-    CC=avr-gcc ./configure --build=`./config.guess` --host=avr --prefix=$PREFIX &>$AVR_BUILD/step09_libc_conf.log
+    apply_patches LIBC &> $AVR_BUILD/step30_libc_patch.log
+       
+    display "configure AVR-LIBC ... (log in $AVR_BUILD/step31_libc_conf.log)"
+    CC=avr-gcc ./configure --build=`./config.guess` --host=avr --prefix=$PREFIX &>$AVR_BUILD/step31_libc_conf.log
     check_return_code
 
-    display "Make AVR-LIBC ...       (log in $AVR_BUILD/step10_libc_make.log)"
-    make &>$AVR_BUILD/step10_libc_make.log
+    display "Make AVR-LIBC ...       (log in $AVR_BUILD/step32_libc_make.log)"
+    make &>$AVR_BUILD/step32_libc_make.log
     check_return_code
 
-    display "Install AVR-LIBC ...    (log in $AVR_BUILD/step11_libc_install.log)"
-    make install &>$AVR_BUILD/step11_libc_install.log
+    display "Install AVR-LIBC ...    (log in $AVR_BUILD/step38_libc_install.log)"
+    make install &>$AVR_BUILD/step38_libc_install.log
     check_return_code
 fi
 print_time >> $AVR_BUILD/time_run.log
@@ -429,18 +401,18 @@ if test "x$build_avrdude" = "xyes" ; then
 
     cd $AVR_BUILD/$FILE_AVRDUDE
 
-    apply_patches AVRDUDE > $AVR_BUILD/step12_avrdude_patch.log)"
+    apply_patches AVRDUDE &> $AVR_BUILD/step40_avrdude_patch.log
        
-    display "configure avrdude ... (log in $AVR_BUILD/step12_avrdude_conf.log)"
-    ./configure --prefix=$PREFIX &>$AVR_BUILD/step12_avrdude_conf.log
+    display "configure avrdude ... (log in $AVR_BUILD/step41_avrdude_conf.log)"
+    ./configure --prefix=$PREFIX &>$AVR_BUILD/step41_avrdude_conf.log
     check_return_code
 
-    display "Make avrdude ...       (log in $AVR_BUILD/step13_avrdude_make.log)"
-    make &>$AVR_BUILD/step13_avrdude_make.log
+    display "Make avrdude ...       (log in $AVR_BUILD/step42_avrdude_make.log)"
+    make &>$AVR_BUILD/step42_avrdude_make.log
     check_return_code
 
-    display "Install avrdude ...    (log in $AVR_BUILD/step14_avrdude_install.log)"
-    make install &>$AVR_BUILD/step14_avrdude_install.log
+    display "Install avrdude ...    (log in $AVR_BUILD/step48_avrdude_install.log)"
+    make install &>$AVR_BUILD/step48_avrdude_install.log
     check_return_code
 fi
 print_time >> $AVR_BUILD/time_run.log
@@ -453,18 +425,22 @@ if test "x$build_avradarts" = "xyes" ; then
 
     cd $AVR_BUILD
 
-    display "Extracting $DOWNLOAD/$FILE_AVRADA.tar.bz2 ..."
-    bunzip2 -c $DOWNLOAD/$FILE_AVRADA.tar.bz2 | tar xf -
+    package_unpack AVRADA
+    # display "Extracting $DOWNLOAD/$FILE_AVRADA.tar.bz2 ..."
+    # bunzip2 -c $DOWNLOAD/$FILE_AVRADA.tar.bz2 | tar xf -
 
     cd $AVR_BUILD/$FILE_AVRADA
 
-    display "configure AVR-Ada ... (log in $AVR_BUILD/step12_avrada_conf.log)"
-    ./configure >& ../step12_avrada_conf.log
+    display "configure AVR-Ada ... (log in $AVR_BUILD/step61_avrada_conf.log)"
+    ./configure >& ../step61_avrada_conf.log
     check_return_code
-    display "build AVR-Ada RTS ... (log in $AVR_BUILD/step13_avrada_rts.log)"
-    make build_rts >& ../step13_avrada_rts.log
+
+    display "build AVR-Ada RTS ... (log in $AVR_BUILD/step62_avrada_rts_make.log)"
+    make build_rts >& ../step62_avrada_rts_make.log
     check_return_code
-    make install_rts >& ../step13_avrada_rts_inst.log
+    
+    display "build AVR-Ada RTS ... (log in $AVR_BUILD/step68_avrada_rts_install.log)"
+    make install_rts >& ../step68_avrada_rts_install.log
     check_return_code
 fi
 
