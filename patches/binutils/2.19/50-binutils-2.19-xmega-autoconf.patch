@@ -1,0 +1,19 @@
+Effects of running autoconf with the former xmega patch applied.
+--------------------------------------------------------------------------------
+--- bfd/bfd-in2.h~	2009-02-12 14:43:18.121961804 +0100
++++ bfd/bfd-in2.h	2009-02-12 14:42:11.094632022 +0100
+@@ -1979,6 +1979,13 @@
+ #define bfd_mach_avr5          5
+ #define bfd_mach_avr51         51
+ #define bfd_mach_avr6          6
++#define bfd_mach_avrxmega1 101
++#define bfd_mach_avrxmega2 102
++#define bfd_mach_avrxmega3 103
++#define bfd_mach_avrxmega4 104
++#define bfd_mach_avrxmega5 105
++#define bfd_mach_avrxmega6 106
++#define bfd_mach_avrxmega7 107
+   bfd_arch_bfin,        /* ADI Blackfin */
+ #define bfd_mach_bfin          1
+   bfd_arch_cr16,       /* National Semiconductor CompactRISC (ie CR16). */
+

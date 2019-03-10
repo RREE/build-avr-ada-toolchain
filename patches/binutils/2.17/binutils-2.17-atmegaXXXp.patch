@@ -1,0 +1,33 @@
+Index: src/gas/config/tc-avr.c
+===================================================================
+RCS file: /cvs/src/src/gas/config/tc-avr.c,v
+retrieving revision 1.34
+diff -u -r1.34 tc-avr.c
+--- src/gas/config/tc-avr.c	7 Jun 2006 11:27:57 -0000	1.34
++++ src/gas/config/tc-avr.c	18 Jun 2006 09:18:52 -0000
+@@ -115,13 +115,15 @@
+   {"atmega161",  AVR_ISA_M161,    bfd_mach_avr5},
+   {"atmega162",  AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega163",  AVR_ISA_M161,    bfd_mach_avr5},
+-  {"atmega164",  AVR_ISA_M323,    bfd_mach_avr5},
++  {"atmega164p", AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega165",  AVR_ISA_M323,    bfd_mach_avr5},
++  {"atmega165p", AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega168",  AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega169",  AVR_ISA_M323,    bfd_mach_avr5},
++  {"atmega169p", AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega32",   AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega323",  AVR_ISA_M323,    bfd_mach_avr5},
+-  {"atmega324",  AVR_ISA_M323,    bfd_mach_avr5},
++  {"atmega324p", AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega325",  AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega329",  AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega3250", AVR_ISA_M323,    bfd_mach_avr5},
+@@ -130,6 +132,7 @@
+   {"atmega64",   AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega640",  AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega644",  AVR_ISA_M323,    bfd_mach_avr5},
++  {"atmega644p", AVR_ISA_M323,    bfd_mach_avr5},
+   {"atmega128",  AVR_ISA_M128,    bfd_mach_avr5},
+   {"atmega1280", AVR_ISA_M128,    bfd_mach_avr5},
+   {"atmega1281", AVR_ISA_M128,    bfd_mach_avr5},

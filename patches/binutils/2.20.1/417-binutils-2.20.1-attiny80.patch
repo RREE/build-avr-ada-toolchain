@@ -1,0 +1,34 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-05 16:10:37.000000000 +0300
++++ binutils/size.c	2011-09-05 16:10:56.000000000 +0300
+@@ -318,6 +318,7 @@ avr_device_t avr[] =
+ 	{"attiny461",     AVR4K,   AVR256, AVR256},
+ 	{"attiny461a",    AVR4K,   AVR256, AVR256},
+ 	{"attiny48",      AVR4K,   AVR256, AVR64},
++	{"attiny80",      AVR8K,   AVR512, AVR256},
+ 
+ 	{"at86rf401",     AVR2K,   224UL,  AVR128},
+ 	{"at90s2313",     AVR2K,   AVR128, AVR128},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-05 16:10:37.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-05 16:10:56.000000000 +0300
+@@ -130,6 +130,7 @@ static struct mcu_type_s mcu_types[] =
+   {"attiny43u",  AVR_ISA_AVR25,   bfd_mach_avr25},
+   {"attiny48",   AVR_ISA_AVR25,   bfd_mach_avr25},
+   {"attiny88",   AVR_ISA_AVR25,   bfd_mach_avr25},
++  {"attiny80",   AVR_ISA_AVR25,   bfd_mach_avr25}, 
+   {"at86rf401",  AVR_ISA_RF401,   bfd_mach_avr25},
+   {"ata6289",    AVR_ISA_AVR25,   bfd_mach_avr25},
+   {"at43usb355", AVR_ISA_AVR3,    bfd_mach_avr3},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-05 16:10:37.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-05 16:10:56.000000000 +0300
+@@ -46,7 +46,7 @@ space plus the MOVW instruction (MCU typ
+ attiny2313a, attiny24, attiny24a, attiny4313, attiny43u, attiny44, attiny44a, 
+ attiny84, attiny84a, attiny25, attiny45, attiny85, attiny261, attiny261a,
+ attiny461, attiny461a, attiny861, attiny861a, attiny87, attiny43u, attiny48,
+-attiny88, at86rf401, ata6289).
++attiny88, attiny80, at86rf401, ata6289).
+ 
+ Instruction set avr3 is for the classic AVR core with up to 128K program
+ memory space (MCU types: at43usb355, at76c711).

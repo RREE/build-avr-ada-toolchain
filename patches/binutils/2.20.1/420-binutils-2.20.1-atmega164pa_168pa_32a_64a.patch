@@ -1,0 +1,89 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-05 16:13:00.000000000 +0300
++++ binutils/size.c	2011-09-05 16:13:06.000000000 +0300
+@@ -175,6 +175,7 @@ avr_device_t avr[] =
+ 	{"at90usb646",    AVR64K,  AVR4K,  AVR2K},
+ 	{"at90usb647",    AVR64K,  AVR4K,  AVR2K},
+ 	{"atmega64",      AVR64K,  AVR4K,  AVR2K},
++	{"atmega64a",     AVR64K,  AVR4K,  AVR2K},
+ 	{"atmega640",     AVR64K,  AVR8K,  AVR4K},
+ 	{"atmega644",     AVR64K,  AVR4K,  AVR2K},
+ 	{"atmega644a",    AVR64K,  AVR4K,  AVR2K},
+@@ -207,6 +208,7 @@ avr_device_t avr[] =
+ 	{"at90can32",     AVR32K,  AVR2K,  AVR1K},
+ 	{"at94k",         AVR32K,  AVR4K,  0UL},
+ 	{"atmega32",      AVR32K,  AVR2K,  AVR1K},
++	{"atmega32a",     AVR32K,  AVR2K,  AVR1K},
+ 	{"atmega323",     AVR32K,  AVR2K,  AVR1K},
+ 	{"atmega324a",    AVR32K,  AVR2K,  AVR1K},
+ 	{"atmega324p",    AVR32K,  AVR2K,  AVR1K},
+@@ -256,6 +258,7 @@ avr_device_t avr[] =
+ 	{"atmega164",     AVR16K,  AVR1K,  AVR512},
+ 	{"atmega164a",    AVR16K,  AVR1K,  AVR512},
+ 	{"atmega164p",    AVR16K,  AVR1K,  AVR512},
++	{"atmega164pa",   AVR16K,  AVR1K,  AVR512},
+ 	{"atmega165a",    AVR16K,  AVR1K,  AVR512},
+ 	{"atmega165",     AVR16K,  AVR1K,  AVR512},
+ 	{"atmega165p",    AVR16K,  AVR1K,  AVR512},
+@@ -263,6 +266,7 @@ avr_device_t avr[] =
+ 	{"atmega168",     AVR16K,  AVR1K,  AVR512},
+ 	{"atmega168a",    AVR16K,  AVR1K,  AVR512},
+ 	{"atmega168p",    AVR16K,  AVR1K,  AVR512},
++	{"atmega168pa",   AVR16K,  AVR1K,  AVR512},
+ 	{"atmega169",     AVR16K,  AVR1K,  AVR512},
+ 	{"atmega169a",    AVR16K,  AVR1K,  AVR512},
+ 	{"atmega169p",    AVR16K,  AVR1K,  AVR512},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-05 16:13:00.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-05 16:13:06.000000000 +0300
+@@ -170,6 +170,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega163",  AVR_ISA_M161,    bfd_mach_avr5},
+   {"atmega164a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega164p", AVR_ISA_AVR5,    bfd_mach_avr5},
++  {"atmega164pa",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega165",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega165a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega165p", AVR_ISA_AVR5,    bfd_mach_avr5},
+@@ -177,11 +178,13 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega168",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega168a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega168p", AVR_ISA_AVR5,    bfd_mach_avr5},
++  {"atmega168pa",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega169",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega169a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega169p", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega169pa",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega32",   AVR_ISA_AVR5,    bfd_mach_avr5},
++  {"atmega32a",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega323",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega324a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega324p", AVR_ISA_AVR5,    bfd_mach_avr5},
+@@ -208,6 +211,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega64rfa2", AVR_ISA_AVR5,  bfd_mach_avr5},
+   {"atmega64rfr2", AVR_ISA_AVR5,  bfd_mach_avr5},
+   {"atmega64",   AVR_ISA_AVR5,    bfd_mach_avr5},
++  {"atmega64a",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega640",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega644",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega644a", AVR_ISA_AVR5,    bfd_mach_avr5},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-05 16:13:00.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-05 16:13:06.000000000 +0300
+@@ -65,13 +65,13 @@ at90pwm1,at90pwm2, at90pwm2b, at90pwm3, 
+ 
+ Instruction set avr5 is for the enhanced AVR core with up to 128K program
+ memory space (MCU types: at90pwm161, atmega16, atmega16a, atmega161, atmega162,
+-atmega163, atmega164a, atmega164p, atmega165, atmega165a, atmega165p, atmega165pa, atmega168, 
+-atmega168a, atmega168p, atmega169, atmega169p, atmega169pa,
+-atmega32, atmega323, atmega324a, atmega324p, atmega324pa, atmega325, atmega325a,
++atmega163, atmega164a, atmega164p, atmega164pa, atmega165, atmega165a, atmega165p, atmega165pa,
++atmega168, atmega168a, atmega168p, atmega168pa, atmega169, atmega169p, atmega169pa, 
++atmega32, atmega32a, atmega323, atmega324a, atmega324p, atmega324pa, atmega325, atmega325a,
+ atmega325p, atmega325pa, atmega3250, atmega3250a, atmega3250p, atmega3250pa, 
+ atmega328, atmega328p,atmega329, atmega329a, atmega329p, atmega329pa, atmega3290, 
+ atmega3290a, atmega3290p, atmega3290pa, atmega406,  atmega64rfa2, atmega64rfr2, 
+-atmega64, atmega640, atmega644, atmega644a, atmega644p, atmega644pa, atmega645, 
++atmega64, atmega64a, atmega640, atmega644, atmega644a, atmega644p, atmega644pa, atmega645, 
+ atmega645a, atmega645p, atmega6450, atmega6450a, atmega6450p, atmega649, 
+ atmega649a, atmega649p, atmega6490, atmega6490a, atmega6490p, atmega64hve, 
+ atmega16hva, atmega16hva2, atmega16hvb, atmega32hvb, atmega16hvbrevb, 

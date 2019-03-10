@@ -1,0 +1,36 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-05 16:12:22.000000000 +0300
++++ binutils/size.c	2011-09-05 16:12:30.000000000 +0300
+@@ -165,7 +165,8 @@ avr_device_t avr[] =
+ 	{"atxmega64a3",   AVR68K,  AVR4K,  AVR2K},
+ 	{"atxmega64a3u",  AVR68K,  AVR4K,  AVR2K},
+ 	{"atxmega64d3",   AVR68K,  AVR4K,  AVR2K},
+-	
++	{"atxmega64d4",   AVR68K,  AVR4K,  AVR2K},
++
+ 	{"atmega64rfa2",  AVR64K,  AVR8K,  AVR2K},
+ 	{"atmega64rfr2",  AVR64K,  AVR8K,  AVR2K},
+ 
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-05 16:12:22.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-05 16:12:30.000000000 +0300
+@@ -273,6 +273,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atxmega64a3", AVR_ISA_XMEGA,  bfd_mach_avrxmega4},
+   {"atxmega64a3u",AVR_ISA_XMEGA,  bfd_mach_avrxmega4},
+   {"atxmega64d3", AVR_ISA_XMEGA,  bfd_mach_avrxmega4},
++  {"atxmega64d4", AVR_ISA_XMEGA,  bfd_mach_avrxmega4},
+   {"atxmega64a1", AVR_ISA_XMEGA,  bfd_mach_avrxmega5},
+   {"atxmega64a1u",AVR_ISA_XMEGA,  bfd_mach_avrxmega5},
+   {"atxmega128a3", AVR_ISA_XMEGA, bfd_mach_avrxmega6},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-05 16:12:22.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-05 16:12:30.000000000 +0300
+@@ -95,7 +95,7 @@ memory space and greater than 64K data s
+ 
+ Instruction set avrxmega4 is for the XMEGA AVR core with up to 64K program
+ memory space and less than 64K data space (MCU types: atxmega64a3, atxmega64a3u,
+-atxmega64d3).
++atxmega64d3, atxmega64d4).
+ 
+ Instruction set avrxmega5 is for the XMEGA AVR core with up to 64K program 
+ memory space and greater than 64K data space (MCU types: atxmega64a1,

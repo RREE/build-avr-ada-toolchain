@@ -1,0 +1,75 @@
+Backported from 2.19.
+
+--- binutils/objdump.c	2007/07/10 13:52:39	1.132
++++ binutils/objdump.c	2008/08/28 16:05:03	1.146
+@@ -1130,14 +1155,17 @@
+ print_line (struct print_file_list *p, unsigned int line)
+ {
+   const char *l;
++  size_t len;
+  
+   --line; 
+   if (line >= p->maxline)
+     return;
+   l = p->linemap [line];
+-  fwrite (l, 1, strcspn (l, "\n\r"), stdout);
+-  putchar ('\n');
+-} 
++  /* Test fwrite return value to quiet glibc warning.  */
++  len = strcspn (l, "\n\r");
++  if (len == 0 || fwrite (l, len, 1, stdout) == 1)
++    putchar ('\n');
++}
+ 
+ /* Print a range of source code lines. */
+ 
+--- gas/read.c	2007/07/03 11:01:03	1.128
++++ gas/read.c	2008/03/13 10:51:33	1.140
+@@ -5628,14 +5693,20 @@
+       if (*input_line_pointer != ',')
+ 	{
+ 	  if (default_prefix)
+-	    asprintf (&label, "%s%s", default_prefix, name);
++	    {
++	      if (asprintf (&label, "%s%s", default_prefix, name) == -1)
++		as_fatal ("%s", xstrerror (errno));
++	    }
+ 	  else
+ 	    {
+ 	      char leading_char = bfd_get_symbol_leading_char (stdoutput);
+ 	      /* Missing entry point, use function's name with the leading
+ 		 char prepended.  */
+ 	      if (leading_char)
+-		asprintf (&label, "%c%s", leading_char, name);
++		{
++		  if (asprintf (&label, "%c%s", leading_char, name) == -1)
++		    as_fatal ("%s", xstrerror (errno));
++		}
+ 	      else
+ 		label = name;
+ 	    }
+--- gas/stabs.c	2007/08/24 21:56:45	1.28.2.1
++++ gas/stabs.c	2007/10/15 02:01:25	1.31
+@@ -667,8 +667,9 @@
+     }
+ 
+   as_where (&file, &lineno);
+-  asprintf (&buf, "\"%s:F1\",%d,0,%d,%s",
+-	    funcname, N_FUN, lineno + 1, startlabname);
++  if (asprintf (&buf, "\"%s:F1\",%d,0,%d,%s",
++		funcname, N_FUN, lineno + 1, startlabname) == -1)
++    as_fatal ("%s", xstrerror (errno));
+   input_line_pointer = buf;
+   s_stab ('s');
+   free (buf);
+@@ -693,7 +696,8 @@
+   ++label_count;
+   colon (sym);
+ 
+-  asprintf (&buf, "\"\",%d,0,0,%s-%s", N_FUN, sym, startlabname);
++  if (asprintf (&buf, "\"\",%d,0,0,%s-%s", N_FUN, sym, startlabname) == -1)
++    as_fatal ("%s", xstrerror (errno));
+   input_line_pointer = buf;
+   s_stab ('s');
+   free (buf);
+

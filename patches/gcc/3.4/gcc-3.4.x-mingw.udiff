@@ -1,0 +1,265 @@
+diff -r -b -u gcc-3.4-20050401/gcc/Makefile.in gcc-3.4-20050401-avr/gcc/Makefile.in
+--- gcc-3.4-20050401/gcc/Makefile.in	Thu Feb 24 09:26:57 2005
++++ gcc-3.4-20050401-avr/gcc/Makefile.in	Thu Apr  7 09:51:54 2005
+@@ -543,7 +543,8 @@
+ 
+ # It is convenient for configure to add the assignment at the beginning,
+ # so don't override it here.
+-USE_COLLECT2 = collect2$(exeext)
++USE_COLLECT2 = 
++# collect2$(exeext)
+ 
+ # List of extra C and assembler files to add to static and shared libgcc2.
+ # Assembler files should have names ending in `.asm'.
+diff -r -b -u gcc-3.4-20050401/gcc/ada/Make-lang.in gcc-3.4-20050401-avr/gcc/ada/Make-lang.in
+--- gcc-3.4-20050401/gcc/ada/Make-lang.in	Wed Sep  1 20:07:42 2004
++++ gcc-3.4-20050401-avr/gcc/ada/Make-lang.in	Fri Apr  8 15:32:29 2005
+@@ -1163,7 +1164,7 @@
+    $(TREE_H) flags.h expr.h convert.h defaults.h ada/ada.h ada/types.h \
+    ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h \
+    ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-utils.h \
+-   gtype-ada.h
++   gtype-ada.h target.h
+ 
+ ada/utils2.o : ada/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+    $(TREE_H) flags.h ada/ada.h ada/types.h ada/atree.h ada/nlists.h \
+Only in gcc-3.4-20050401-avr/gcc/ada: Make-lang.in~
+diff -r -b -u gcc-3.4-20050401/gcc/ada/Makefile.in gcc-3.4-20050401-avr/gcc/ada/Makefile.in
+--- gcc-3.4-20050401/gcc/ada/Makefile.in	Mon Jan 26 21:57:32 2004
++++ gcc-3.4-20050401-avr/gcc/ada/Makefile.in	Thu Apr  7 09:51:54 2005
+@@ -1747,7 +1755,7 @@
+ 	$(CHMOD) u+w rts
+ # Copy target independent sources
+ 	$(foreach f,$(ADA_INCLUDE_SRCS) $(LIBGNAT_SRCS), \
+-	  $(LN_S) $(fsrcpfx)$(f) rts ;) true
++	  cp $(fsrcpfx)$(f) rts/ ;) true
+ # Remove files to be replaced by target dependent sources
+ 	$(RM) $(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
+ 	                rts/$(word 1,$(subst <, ,$(PAIR))))
+diff -r -b -u gcc-3.4-20050401/gcc/ada/adaint.c gcc-3.4-20050401-avr/gcc/ada/adaint.c
+--- gcc-3.4-20050401/gcc/ada/adaint.c	Tue Jan 13 11:51:31 2004
++++ gcc-3.4-20050401-avr/gcc/ada/adaint.c	Thu Apr  7 09:51:54 2005
+@@ -76,7 +76,6 @@
+ #ifdef __MINGW32__
+ #include "mingw32.h"
+ #include <sys/utime.h>
+-#include <ctype.h>
+ #else
+ #ifndef VMS
+ #include <utime.h>
+@@ -189,9 +188,32 @@
+ #define DIR_SEPARATOR '/'
+ #endif
+ 
+-char __gnat_dir_separator = DIR_SEPARATOR;
++/* Override the system.h DIR_SEPARATOR define on windows. */
++#ifdef _WIN32
++const char __gnat_dir_separator = '\\';
++#else
++const char __gnat_dir_separator = DIR_SEPARATOR;
++#endif
++ 
++/* This is all in libiberty filenames.h, but we can't include when IN_RTS, */ 
++#if defined(__MSDOS__) || defined(_WIN32) || defined(__EMX__) \
++     || defined (__CYGWIN__)
++#ifndef HAVE_DOS_BASED_FILE_SYSTEM
++#define HAVE_DOS_BASED_FILE_SYSTEM 1
++#endif
++#endif
++ 
++static inline int
++__gnat_is_dir_separator (const char c)
++{
++#ifdef HAVE_DOS_BASED_FILE_SYSTEM
++  return (c == '/' ||  c == '\\');
++#else
++  return (c == '/' || c == DIR_SEPARATOR);
++#endif
++}
+ 
+-char __gnat_path_separator = PATH_SEPARATOR;
++const char __gnat_path_separator = PATH_SEPARATOR;
+ 
+ /* The GNAT_LIBRARY_TEMPLATE contains a list of expressions that define
+    the base filenames that libraries specified with -lsomelib options
+@@ -366,7 +388,7 @@
+   char full_path[256];
+   int fd;
+ 
+-  sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
++  sprintf (full_path, "%s%c%s", dir, __gnat_dir_separator, file);
+   fd = open (full_path, O_CREAT | O_EXCL, 0600);
+   if (fd < 0)
+     return 0;
+@@ -386,7 +408,7 @@
+   char full_path[256];
+   int fd;
+ 
+-  sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
++  sprintf (full_path, "%s%c%s", dir, __gnat_dir_separator, file);
+   fd = open (full_path, O_CREAT | O_EXCL, 0600);
+   if (fd < 0)
+     return 0;
+@@ -408,7 +430,7 @@
+   struct stat stat_result;
+   int fd;
+ 
+-  sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
++  sprintf (full_path, "%s%c%s", dir, __gnat_dir_separator, file);
+   sprintf (temp_file, "%s-%ld-%ld", dir, (long) getpid(), (long) getppid ());
+ 
+   /* Create the temporary file and write the process number.  */
+@@ -482,9 +504,9 @@
+ 
+    *length = strlen (dir);
+ 
+-   if (dir [*length - 1] != DIR_SEPARATOR)
++   if (!__gnat_is_dir_separator(dir [*length - 1]))
+      {
+-       dir [*length] = DIR_SEPARATOR;
++       dir [*length] = __gnat_dir_separator;
+        ++(*length);
+      }
+    dir[*length] = '\0';
+@@ -1374,8 +1396,8 @@
+ int
+ __gnat_is_absolute_path (char *name)
+ {
+-  return (*name == '/' || *name == DIR_SEPARATOR
+-#if defined (__EMX__) || defined (MSDOS) || defined (WINNT)
++  return (__gnat_is_dir_separator (*name)
++#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+       || (strlen (name) > 1 && isalpha (name[0]) && name[1] == ':')
+ #endif
+ 	  );
+@@ -1853,7 +1875,7 @@
+ 
+   /* If file_name include directory separator(s), try it first as
+      a path name relative to the current directory */
+-  for (ptr = file_name; *ptr && *ptr != '/' && *ptr != DIR_SEPARATOR; ptr++)
++  for (ptr = file_name; !__gnat_is_dir_separator (*ptr); ptr++)
+     ;
+ 
+   if (*ptr != 0)
+@@ -1881,8 +1903,8 @@
+         *ptr++ = *path_val++;
+ 
+       ptr--;
+-      if (*ptr != '/' && *ptr != DIR_SEPARATOR)
+-        *++ptr = DIR_SEPARATOR;
++      if (!__gnat_is_dir_separator (*ptr))
++        *++ptr = __gnat_dir_separator;
+ 
+       strcpy (++ptr, file_name);
+ 
+diff -r -b -u gcc-3.4-20050401/gcc/mklibgcc.in gcc-3.4-20050401-avr/gcc/mklibgcc.in
+--- gcc-3.4-20050401/gcc/mklibgcc.in	Thu Feb 24 09:26:57 2005
++++ gcc-3.4-20050401-avr/gcc/mklibgcc.in	Thu Apr  7 09:51:59 2005
+@@ -46,6 +46,7 @@
+ echo 'srcdir = @srcdir@'
+ echo 'VPATH = @srcdir@'
+ echo 'EQ = ='
++echo 'INCLUDES += -I@srcdir@'
+ echo
+ echo 'force:'
+ echo
+--- gcc-3.4-20050401/gcc/ada/xgnatugn.adb~	Mon Aug  9 12:24:22 2004
++++ gcc-3.4-20050401/gcc/ada/xgnatugn.adb	Mon Apr 11 12:28:27 2005
+@@ -98,6 +98,7 @@
+ with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
+ with Ada.Strings.Maps;           use Ada.Strings.Maps;
+ with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
++with Ada.Streams.Stream_IO;      use Ada.Streams.Stream_IO;
+ with Ada.Text_IO;                use Ada.Text_IO;
+ 
+ with GNAT.Spitbol;               use GNAT.Spitbol;
+@@ -109,12 +110,14 @@
+    --  Print usage information. Invoked if an invalid command line is
+    --  encountered.
+ 
+-   Output_File : File_Type;
++   subtype Sfile is Ada.Streams.Stream_IO.File_Type;
++
++   Output_File : Sfile;
+    --  The preprocessed output is written to this file
+ 
+    type Input_File is record
+       Name : VString;
+-      Data : File_Type;
++      Data : Ada.Text_IO.File_Type;
+       Line : Natural := 0;
+    end record;
+    --  Records information on an input file. Name and Line are used
+@@ -124,6 +127,10 @@
+    --  Returns a line from Input and performs the necessary
+    --  line-oriented checks (length, character set, trailing spaces).
+ 
++   procedure Put_Line (F : Sfile; S : String);
++   procedure Put_Line (F : Sfile; S : VString);
++   --  Local version of Put_Line ensures Unix style line endings
++
+    Number_Of_Warnings : Natural := 0;
+    Number_Of_Errors   : Natural := 0;
+    Warnings_Enabled   : Boolean;
+@@ -353,6 +360,21 @@
+       end;
+    end Get_Line;
+ 
++   --------------
++   -- Put_Line --
++   --------------
++
++   procedure Put_Line (F : Sfile; S : String) is
++   begin
++      String'Write (Stream (F), S);
++      Character'Write (Stream (F), ASCII.LF);
++   end Put_Line;
++
++   procedure Put_Line (F : Sfile; S : VString) is
++   begin
++      Put_Line (F, To_String (S));
++   end Put_Line;
++
+    -----------
+    -- Error --
+    -----------
+@@ -1312,7 +1334,7 @@
+          Open (Source_File.Data, In_File, Argument (2));
+ 
+       exception
+-         when Name_Error =>
++         when Ada.Text_IO.Name_Error =>
+             Valid_Command_Line := False;
+       end;
+    end if;
+@@ -1325,7 +1347,7 @@
+          Open (Dictionary_File.Data, In_File, Argument (3));
+ 
+       exception
+-         when Name_Error =>
++         when Ada.Text_IO.Name_Error =>
+             Valid_Command_Line := False;
+       end;
+    end if;
+@@ -1350,7 +1372,7 @@
+          Create (Output_File, Out_File, S (Output_File_Name));
+ 
+       exception
+-         when Name_Error | Use_Error =>
++         when Ada.Text_IO.Name_Error | Ada.Text_IO.Use_Error =>
+             Valid_Command_Line := False;
+       end;
+    end if;
+--- gcc-3.4.3/gcc/ada/Makefile.in.orig	Tue Apr 26 06:03:01 2005
++++ gcc-3.4.3/gcc/ada/Makefile.in	Tue Apr 26 06:03:22 2005
+@@ -95,8 +95,8 @@
+ LEX = flex
+ LEXFLAGS =
+ CHMOD = chmod
+-LN = ln
+-LN_S = ln -s
++LN = cp -p
++LN_S = cp -p
+ CP = cp -p
+ MV = mv -f
+ RM = rm -f

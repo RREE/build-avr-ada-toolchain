@@ -1,0 +1,34 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-05 16:11:30.000000000 +0300
++++ binutils/size.c	2011-09-05 16:11:38.000000000 +0300
+@@ -143,6 +143,7 @@ avr_device_t avr[] =
+ 
+ 	{"atxmega128a1",  AVR136K, AVR8K,  AVR2K},
+ 	{"atxmega128a1u", AVR136K, AVR8K,  AVR2K},
++	{"atxmega128a4u", AVR136K, AVR8K,  AVR2K},
+ 	{"atxmega128a3",  AVR136K, AVR8K,  AVR2K},
+ 	{"atxmega128a3u", AVR136K, AVR8K,  AVR2K},
+ 	{"atxmega128b1",  AVR136K, AVR8K,  AVR2K},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-05 16:11:30.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-05 16:11:38.000000000 +0300
+@@ -290,6 +290,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atxmega384c3", AVR_ISA_XMEGA, bfd_mach_avrxmega6},
+   {"atxmega128a1", AVR_ISA_XMEGA, bfd_mach_avrxmega7},
+   {"atxmega128a1u",AVR_ISA_XMEGA, bfd_mach_avrxmega7},
++  {"atxmega128a4u",AVR_ISA_XMEGA, bfd_mach_avrxmega7},
+   {"attiny4",      AVR_ISA_AVRTINY10, bfd_mach_avrtiny10},
+   {"attiny5",      AVR_ISA_AVRTINY10, bfd_mach_avrtiny10},
+   {"attiny9",      AVR_ISA_AVRTINY10, bfd_mach_avrtiny10},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-05 16:11:30.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-05 16:11:38.000000000 +0300
+@@ -108,7 +108,7 @@ atxmega256a3u, atxmega256a3b, atxmega256
+ 
+ Instruction set avrxmega7 is for the XMEGA AVR core with greater than 64K program
+ memory space and greater than 64K data space (MCU types: atxmega128a1,
+-atxmega128a1u).
++atxmega128a1u, atxmega128a4u).
+ 
+ @cindex @code{-mall-opcodes} command line option, AVR
+ @item -mall-opcodes

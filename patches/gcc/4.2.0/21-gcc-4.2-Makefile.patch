@@ -1,0 +1,50 @@
+--- gcc/Makefile.in~	Wed May 17 18:38:58 2006
++++ gcc/Makefile.in	Sat Oct 28 07:04:03 2006
+@@ -842,8 +842,8 @@
+ # -I$(@D) and -I$(srcdir)/$(@D) cause the subdirectory of the file
+ # currently being compiled, in both source trees, to be examined as well.
+ # libintl.h will be found in ../intl if we are using the included libintl.
+-INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
++INCLUDES = -I. -I$(@D) -I. -I$(srcdir) -I$(srcdir)/$(@D) \
+ 	   -I$(srcdir)/../include @INCINTL@ \
+ 	   $(CPPINC) $(GMPINC)
+ 
+--- gcc/Makefile.in~	Thu Dec 28 20:07:56 2006
++++ gcc/Makefile.in	Wed Jan  3 22:07:53 2007
+@@ -407,9 +407,9 @@
+ SYSTEM_HEADER_DIR = `echo @SYSTEM_HEADER_DIR@ | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`
+ 
+ # Control whether to run fixproto and fixincludes.
+-STMP_FIXPROTO = @STMP_FIXPROTO@
+-STMP_FIXINC = @STMP_FIXINC@
++STMP_FIXPROTO = 
++STMP_FIXINC = 
+ 
+ # Test to see whether <limits.h> exists in the system header files.
+ LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
+--- gcc/ada/Makefile.in~	Sat Oct 28 07:23:38 2006
++++ gcc/ada/Makefile.in	Sat Oct 28 15:39:41 2006
+@@ -95,8 +95,8 @@
+ LEX = flex
+ LEXFLAGS =
+ CHMOD = chmod
+-LN = ln
+-LN_S = ln -s
++LN = cp -p
++LN_S = cp -p
+ CP = cp -p
+ MV = mv -f
+ RM = rm -f
+
+--- configure~	Sun Dec 10 22:43:30 2006
++++ configure	Thu Jan  4 10:15:19 2007
+@@ -1136,9 +1136,6 @@
+   ENABLE_LIBADA=yes
+ fi
+ 
+-if test "${ENABLE_LIBADA}" != "yes" ; then
+-  noconfigdirs="$noconfigdirs gnattools"
+-fi
+ 
+ # Check whether --enable-libssp or --disable-libssp was given.
+ if test "${enable_libssp+set}" = set; then

@@ -1,0 +1,15 @@
+Workaround to build static lib with out gcc.
+
+Index: gcc-4_1-branch/gcc/ada/mlib-utl.adb
+===================================================================
+--- gcc-4_1-branch/gcc/ada/mlib-utl.adb        (revision 114128)
++++ gcc-4_1-branch/gcc/ada/mlib-utl.adb        (working copy)
+@@ -38,7 +38,7 @@
+
+    Initialized : Boolean := False;
+
+-   Gcc_Name : constant String := "gcc";
++   Gcc_Name : constant String := "avr-gcc";
+    Gcc_Exec : OS_Lib.String_Access;
+
+    Ar_Name    : OS_Lib.String_Access;

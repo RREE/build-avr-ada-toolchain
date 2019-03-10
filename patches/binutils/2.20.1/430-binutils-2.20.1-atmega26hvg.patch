@@ -1,0 +1,43 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-12-08 14:07:10.000000000 +0530
++++ binutils/size.c	2011-12-14 18:26:08.000000000 +0530
+@@ -99,6 +99,7 @@ static int return_code = 0;
+ #define AVR16K 16384UL
+ #define AVR20K 20480UL
+ #define AVR24K 24576UL
++#define AVR26K 26624UL
+ #define AVR32K 32768UL
+ #define AVR36K 36864UL
+ #define AVR40K 40960UL
+@@ -257,6 +258,8 @@ avr_device_t avr[] =
+ 	{"atmega32u4",    AVR32K,  2560UL, AVR1K},
+ 	{"atmega32u6",    AVR32K,  2560UL, AVR1K},
+ 
++	{"atmega26hvg",   AVR26K,  AVR1K,  AVR512},
++
+ 	{"at43usb355",    AVR24K,  1120UL,   0UL},
+ 
+ 	{"atxmega16a4",   AVR20K,  AVR2K,  AVR1K},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-12-08 14:07:10.000000000 +0530
++++ gas/config/tc-avr.c	2011-12-08 14:08:31.000000000 +0530
+@@ -235,6 +235,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega16hva2",AVR_ISA_AVR5,   bfd_mach_avr5},
+   {"atmega16hvb",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega16hvbrevb",AVR_ISA_AVR5,bfd_mach_avr5},
++  {"atmega26hvg",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega32hvb",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega32hvbrevb",AVR_ISA_AVR5,bfd_mach_avr5},
+   {"atmega48hvf",AVR_ISA_AVR5,    bfd_mach_avr5},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-12-08 14:07:10.000000000 +0530
++++ gas/doc/c-avr.texi	2011-12-08 14:13:40.000000000 +0530
+@@ -74,7 +74,7 @@ atmega3290a, atmega3290p, atmega3290pa, 
+ atmega64, atmega64a, atmega640, atmega644, atmega644a, atmega644p, atmega644pa, atmega645, 
+ atmega645a, atmega645p, atmega6450, atmega6450a, atmega6450p, atmega649, 
+ atmega649a, atmega649p, atmega6490, atmega6490a, atmega6490p, atmega64hve, 
+-atmega16hva, atmega16hva2, atmega16hvb, atmega32hvb, atmega16hvbrevb, 
++atmega16hva, atmega16hva2, atmega16hvb, atmega26hvg, atmega32hvb, atmega16hvbrevb, 
+ atmega32hvbrevb, atmega48hvf, at90can32, at90can64, at90pwm216, at90pwm316, atmega16u4, 
+ atmega32c1, atmega64c1, atmega64m1, atmega16m1, atmega32m1, atmega64m1,
+ atmega16u4, atmega32u4, atmega32u6, at90usb646, at90usb647, at94k, at90scr100).

@@ -1,0 +1,163 @@
+diff -u -r1.9.4.1 -r1.9.4.2
+--- gcc/gcc/dojump.c	2004/11/23 13:12:281.9.4.1
++++ gcc/gcc/dojump.c	2004/12/14 01:47:301.9.4.2
+@@ -1,6 +1,6 @@
+ /* Convert tree expression to rtl instructions, for GNU compiler.
+    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+-   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
++   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ 
+ This file is part of GCC.
+ 
+@@ -33,7 +33,9 @@
+ #include "expr.h"
+ #include "optabs.h"
+ #include "langhooks.h"
++#include "ggc.h"
+ 
++static bool prefer_and_bit_test (enum machine_mode, int);
+ static void do_jump_by_parts_greater (tree, int, rtx, rtx);
+ static void do_jump_by_parts_equality (tree, rtx, rtx);
+ static void do_compare_and_jump(tree, enum rtx_code, enum rtx_code, rtx,
+@@ -107,6 +109,45 @@
+   do_jump (exp, NULL_RTX, label);
+ }
+ 
++/* Used internally by prefer_and_bit_test.  */
++
++static GTY(()) rtx and_reg;
++static GTY(()) rtx and_test;
++static GTY(()) rtx shift_test;
++
++/* Compare the relative costs of "(X & (1 << BITNUM))" and "(X >> BITNUM) & 1"
++   where X is an arbitrary register of mode MODE.  Return true if the former
++   is preferred.  */
++
++static bool
++prefer_and_bit_test (enum machine_mode mode, int bitnum)
++{
++  if (and_test == 0)
++    {
++      /* Set up rtxes for the two variations.  Use NULL as a placeholder
++ for the BITNUM-based constants.  */
++      and_reg = gen_rtx_REG (mode, FIRST_PSEUDO_REGISTER);
++      and_test = gen_rtx_AND (mode, and_reg, NULL);
++      shift_test = gen_rtx_AND (mode, gen_rtx_ASHIFTRT (mode, and_reg, NULL),
++const1_rtx);
++    }
++  else
++    {
++      /* Change the mode of the previously-created rtxes.  */
++      PUT_MODE (and_reg, mode);
++      PUT_MODE (and_test, mode);
++      PUT_MODE (shift_test, mode);
++      PUT_MODE (XEXP (shift_test, 0), mode);
++    }
++
++  /* Fill in the integers.  */
++  XEXP (and_test, 1) = GEN_INT ((unsigned HOST_WIDE_INT) 1 << bitnum);
++  XEXP (XEXP (shift_test, 0), 1) = GEN_INT (bitnum);
++
++  return (rtx_cost (and_test, IF_THEN_ELSE)
++  <= rtx_cost (shift_test, IF_THEN_ELSE));
++}
++
+ /* Generate code to evaluate EXP and jump to IF_FALSE_LABEL if
+    the result is zero, or IF_TRUE_LABEL if the result is one.
+    Either of IF_FALSE_LABEL and IF_TRUE_LABEL may be zero,
+@@ -212,6 +253,59 @@
+       break;
+ 
+     case BIT_AND_EXPR:
++      /* fold_single_bit_test() converts (X & (1 << C)) into (X >> C) & 1.
++ See if the former is preferred for jump tests and restore it
++ if so.  */
++      if (integer_onep (TREE_OPERAND (exp, 1)))
++{
++  tree exp0 = TREE_OPERAND (exp, 0);
++  rtx set_label, clr_label;
++
++  /* Strip narrowing integral type conversions.  */
++  while ((TREE_CODE (exp0) == NOP_EXPR
++  || TREE_CODE (exp0) == CONVERT_EXPR
++  || TREE_CODE (exp0) == NON_LVALUE_EXPR)
++ && TREE_OPERAND (exp0, 0) != error_mark_node
++ && TYPE_PRECISION (TREE_TYPE (exp0))
++    <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp0, 0))))
++    exp0 = TREE_OPERAND (exp0, 0);
++
++  /* "exp0 ^ 1" inverts the sense of the single bit test.  */
++  if (TREE_CODE (exp0) == BIT_XOR_EXPR
++      && integer_onep (TREE_OPERAND (exp0, 1)))
++    {
++      exp0 = TREE_OPERAND (exp0, 0);
++      clr_label = if_true_label;
++      set_label = if_false_label;
++    }
++  else
++    {
++      clr_label = if_false_label;
++      set_label = if_true_label;
++    }
++
++  if (TREE_CODE (exp0) == RSHIFT_EXPR)
++    {
++      tree arg = TREE_OPERAND (exp0, 0);
++      tree shift = TREE_OPERAND (exp0, 1);
++      tree argtype = TREE_TYPE (arg);
++      if (TREE_CODE (shift) == INTEGER_CST
++  && compare_tree_int (shift, 0) >= 0
++  && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
++  && prefer_and_bit_test (TYPE_MODE (argtype),
++  TREE_INT_CST_LOW (shift)))
++{
++  HOST_WIDE_INT mask = (HOST_WIDE_INT) 1
++       << TREE_INT_CST_LOW (shift);
++  tree t = build_int_2 (mask, 0);
++  TREE_TYPE (t) = argtype;
++  do_jump (build (BIT_AND_EXPR, argtype, arg, t),
++   clr_label, set_label);
++  break;
++}
++    }
++}
++
+       /* If we are AND'ing with a small constant, do this comparison in the
+          smallest type that fits.  If the machine doesn't have comparisons
+          that small, it will be converted back to the wider comparison.
+@@ -1003,3 +1097,5 @@
+                             ? expr_size (TREE_OPERAND (exp, 0)) : NULL_RTX),
+                            if_false_label, if_true_label);
+ }
++
++#include "gt-dojump.h"
+
+diff -u -r1.1223.2.20 -r1.1223.2.21
+--- gcc/gcc/Makefile.in	2004/10/18 16:00:391.1223.2.20
++++ gcc/gcc/Makefile.in	2004/12/14 01:47:301.1223.2.21
+@@ -1595,7 +1595,7 @@
+    except.h reload.h $(GGC_H) langhooks.h intl.h $(TM_P_H) real.h $(TARGET_H)
+ dojump.o : dojump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
+    flags.h function.h $(EXPR_H) $(OPTABS_H) $(INSN_ATTR_H) insn-config.h \
+-   langhooks.h
++   langhooks.h $(GGC_H) gt-dojump.h
+ builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H)\
+    flags.h $(TARGET_H) function.h $(REGS_H) $(EXPR_H) $(OPTABS_H) insn-config.h \
+    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
+@@ -2077,6 +2077,7 @@
+   $(srcdir)/c-common.h $(srcdir)/c-tree.h \
+   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
+   $(srcdir)/dbxout.c $(srcdir)/dwarf2out.c $(srcdir)/dwarf2asm.c \
++  $(srcdir)/dojump.c \
+   $(srcdir)/emit-rtl.c $(srcdir)/except.c $(srcdir)/explow.c $(srcdir)/expr.c \
+   $(srcdir)/fold-const.c $(srcdir)/function.c \
+   $(srcdir)/gcse.c $(srcdir)/integrate.c $(srcdir)/lists.c $(srcdir)/optabs.c \
+@@ -2096,7 +2097,7 @@
+ gt-function.h gt-integrate.h gt-stmt.h gt-tree.h gt-varasm.h \
+ gt-emit-rtl.h gt-explow.h gt-stor-layout.h gt-regclass.h \
+ gt-lists.h gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h \
+-gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h \
++gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dojump.h \
+ gt-dwarf2out.h gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h \
+ gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parse.h \
+ gt-c-pragma.h gtype-c.h gt-input.h gt-cfglayout.h \

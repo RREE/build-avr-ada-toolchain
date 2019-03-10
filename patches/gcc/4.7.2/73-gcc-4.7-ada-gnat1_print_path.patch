@@ -1,0 +1,45 @@
+--- gcc/ada/gnat1drv.adb.orig	2011-12-21 14:34:12.000000000 +0100
++++ gcc/ada/gnat1drv.adb	2012-01-22 12:42:07.015625000 +0100
+@@ -777,6 +777,42 @@
+          Write_Str ("Copyright 1992-" & Current_Year
+                     & ", Free Software Foundation, Inc.");
+          Write_Eol;
++         Write_Eol;
++         Write_Str ("Source Search Path:");
++         Write_Eol;
++
++         for J in 1 .. Nb_Dir_In_Src_Search_Path loop
++            Write_Str ("   ");
++
++            if Dir_In_Src_Search_Path (J)'Length = 0 then
++               Write_Str ("<Current_Directory>");
++            else
++               Write_Str (To_Host_Dir_Spec
++                          (Dir_In_Src_Search_Path (J).all, True).all);
++            end if;
++
++            Write_Eol;
++         end loop;
++
++         Write_Eol;
++         Write_Eol;
++         Write_Str ("Object Search Path:");
++         Write_Eol;
++
++         for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
++            Write_Str ("   ");
++
++            if Dir_In_Obj_Search_Path (J)'Length = 0 then
++               Write_Str ("<Current_Directory>");
++            else
++               Write_Str (To_Host_Dir_Spec
++                          (Dir_In_Obj_Search_Path (J).all, True).all);
++            end if;
++
++            Write_Eol;
++         end loop;
++
++         Write_Eol;
+       end if;
+ 
+       --  Check we do not have more than one source file, this happens only in

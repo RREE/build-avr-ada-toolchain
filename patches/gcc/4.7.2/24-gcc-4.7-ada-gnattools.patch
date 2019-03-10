@@ -1,0 +1,13 @@
+--- gnattools/Makefile.in~	2011-10-12 22:41:57 +0000
++++ gnattools/Makefile.in	2012-04-30 14:02:28 +0000
+@@ -119,7 +119,9 @@
+ 
+ # File associations set by configure
+ EXTRA_GNATTOOLS = @EXTRA_GNATTOOLS@
+-TOOLS_TARGET_PAIRS = @TOOLS_TARGET_PAIRS@
++TOOLS_TARGET_PAIRS = \
++   mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
++   indepsw.adb<indepsw-gnu.adb
+ 
+ # Makefile targets
+ # ----------------

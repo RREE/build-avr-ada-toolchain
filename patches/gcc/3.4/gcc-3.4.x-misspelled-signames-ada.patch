@@ -1,0 +1,35 @@
+--- gcc-3_4-branch/gcc/config/avr/avr.c	2005-12-08 20:23:43.000000000 +0100
++++ gcc-3.4.5/gcc/config/avr/avr.c	2005-12-08 21:58:05.000000000 +0100
+@@ -4655,6 +4684,32 @@
+ 	       IDENTIFIER_POINTER (name));
+       *no_add_attrs = true;
+     }
++  else
++    {
++      const char *func_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (*node));
++      const char *attr = IDENTIFIER_POINTER (name);
++
++      /* If the function has the 'signal' or 'interrupt' attribute, test to
++         make sure that the name of the function is "__vector_NN" so as to
++         catch when the user misspells the interrupt vector name.  */
++
++      if (strncmp (attr, "interrupt", strlen ("interrupt")) == 0)
++        {
++          if (strncmp (func_name, "__vector", strlen ("__vector")) != 0)
++            {
++              warning ("`%s' appears to be a misspelled interrupt handler",
++                       func_name);
++            }
++        }
++      else if (strncmp (attr, "signal", strlen ("signal")) == 0)
++        {
++          if (strncmp (func_name, "__vector", strlen ("__vector")) != 0)
++            {
++              warning ("`%s' appears to be a misspelled signal handler",
++                       func_name);
++            }
++        }
++    }
+ 
+   return NULL_TREE;
+ }

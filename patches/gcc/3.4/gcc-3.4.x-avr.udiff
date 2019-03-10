@@ -1,0 +1,463 @@
+diff -r -b -u gcc-3.4-20050401/gcc/ada/bindgen.adb gcc-3.4-20050401-avr/gcc/ada/bindgen.adb
+--- gcc-3.4-20050401/gcc/ada/bindgen.adb	Mon Jan  5 15:20:43 2004
++++ gcc-3.4-20050401-avr/gcc/ada/bindgen.adb	Thu Apr  7 10:36:54 2005
+@@ -1447,6 +1447,10 @@
+             WBI ("      procedure Ada_Main_Program;");
+          end if;
+ 
++         if Opt.Freestanding then
++            WBI ("      pragma No_Return (Ada_Main_Program);");
++         end if;
++
+          Set_String ("      pragma Import (Ada, Ada_Main_Program, """);
+          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+          Set_Main_Program_Name;
+@@ -1462,7 +1466,7 @@
+       --  The reference stops Ada_Main_Program_Name from being optimized
+       --  away by smart linkers, such as the AiX linker.
+ 
+-      if Bind_Main_Program then
++      if Bind_Main_Program and then not Opt.Freestanding then
+          WBI
+            ("      Ensure_Reference : System.Address := " &
+             "Ada_Main_Program_Name'Address;");
+@@ -1501,7 +1505,9 @@
+       WBI ("      " & Ada_Init_Name.all & ";");
+ 
+       if not No_Main_Subprogram then
+-         WBI ("      Break_Start;");
++         if not Opt.Freestanding then
++            WBI ("      Break_Start;");
++         end if;
+ 
+          if ALIs.Table (ALIs.First).Main_Program = Proc then
+             WBI ("      Ada_Main_Program;");
+@@ -2094,7 +2100,7 @@
+       --  to a symbol duplication during the link (for instance when a
+       --  C program uses 2 Ada libraries)
+ 
+-      if Bind_Main_Program then
++      if Bind_Main_Program and then not Opt.Freestanding then
+          WBI ("");
+          WBI ("   GNAT_Version : constant String :=");
+          WBI ("                    ""GNAT Version: " &
+@@ -2130,17 +2136,21 @@
+ 
+       if Bind_Main_Program then
+ 
+-         --  If we have the standard library, then Break_Start is defined
+-         --  there, but when the standard library is suppressed, Break_Start
+-         --  is defined here.
++         if not Opt.Freestanding then
++            --  If we have the standard library, then Break_Start is
++            --  defined there, but when the standard library is
++            --  suppressed, Break_Start is defined here.
+ 
+-         WBI ("");
+-         WBI ("   procedure Break_Start;");
++            WBI ("");
++            WBI ("   procedure Break_Start;");
+ 
+-         if Suppress_Standard_Library_On_Target then
+-            WBI ("   pragma Export (C, Break_Start, ""__gnat_break_start"");");
+-         else
+-            WBI ("   pragma Import (C, Break_Start, ""__gnat_break_start"");");
++            if Suppress_Standard_Library_On_Target then
++               WBI ("   pragma Export (C, Break_Start," &
++                    """__gnat_break_start"");");
++            else
++               WBI ("   pragma Import (C, Break_Start," &
++                    """__gnat_break_start"");");
++            end if;
+          end if;
+ 
+          WBI ("");
+@@ -2177,6 +2187,10 @@
+             end if;
+          end if;
+ 
++         if Opt.Freestanding then
++            WBI ("   pragma No_Return (" & Get_Main_Name & ");");
++         end if;
++
+          WBI ("   pragma Export (C, " & Get_Main_Name & ", """ &
+            Get_Main_Name & """);");
+       end if;
+@@ -2242,7 +2256,9 @@
+ 
+       --  No need to generate a finalization routine if no finalization
+ 
+-      if not Restrictions_On_Target (No_Finalization) then
++      if not Restrictions_On_Target (No_Finalization) and then
++        not Opt.Freestanding
++      then
+          Gen_Adafinal_Ada;
+       end if;
+ 
+@@ -2251,7 +2267,9 @@
+          --  When suppressing the standard library then generate dummy body
+          --  for Break_Start
+ 
+-         if Suppress_Standard_Library_On_Target then
++         if Suppress_Standard_Library_On_Target and then
++           not Opt.Freestanding
++         then
+             WBI ("");
+             WBI ("   procedure Break_Start is");
+             WBI ("   begin");
+@@ -2487,7 +2505,7 @@
+    --  Start of processing for Gen_Versions_Ada
+ 
+    begin
+-      if Bind_For_Library then
++      if Bind_For_Library or else Opt.Freestanding then
+ 
+          --  When building libraries, the version number of each unit can
+          --  not be computed, since the binder does not know the full list
+
+diff -r -b -u gcc-3.4-20050401/gcc/ada/gnatbind.adb gcc-3.4-20050401-avr/gcc/ada/gnatbind.adb
+--- gcc-3.4-20050401/gcc/ada/gnatbind.adb	Mon Jan  5 15:20:44 2004
++++ gcc-3.4-20050401-avr/gcc/ada/gnatbind.adb	Thu Apr  7 09:51:56 2005
+@@ -209,6 +209,11 @@
+          then
+             Add_Lib_Search_Dir (Argv (4 .. Argv'Last));
+ 
++         --  -freestanding
++
++         elsif Argv (2 .. Argv'Last) = "freestanding" then
++            Opt.Freestanding := True;
++
+          --  -nostdlib
+ 
+          elsif Argv (2 .. Argv'Last) = "nostdlib" then
+diff -r -b -u gcc-3.4-20050401/gcc/ada/make.adb gcc-3.4-20050401-avr/gcc/ada/make.adb
+--- gcc-3.4-20050401/gcc/ada/make.adb	Tue Jan 13 11:51:33 2004
++++ gcc-3.4-20050401-avr/gcc/ada/make.adb	Thu Apr  7 09:51:57 2005
+@@ -4511,6 +4511,11 @@
+                then
+                   Library_Projs.Init;
+ 
++                  if Opt.Verbose_Mode then
++                     Write_Str ("Init library build (RE1)");
++                     Write_Eol;
++                  end if;
++
+                   declare
+                      Proj2   : Project_Id;
+                      Depth   : Natural;
+@@ -4549,6 +4554,11 @@
+                         end if;
+                      end loop;
+                   end;
++
++                  if Opt.Verbose_Mode then
++                     Write_Str ("build library build (RE2)");
++                     Write_Eol;
++                  end if;
+ 
+                   --  Build the libraries, if any need to be built
+ 
+diff -r -b -u gcc-3.4-20050401/gcc/ada/misc.c gcc-3.4-20050401-avr/gcc/ada/misc.c
+--- gcc-3.4-20050401/gcc/ada/misc.c	Tue Mar  9 02:59:53 2004
++++ gcc-3.4-20050401-avr/gcc/ada/misc.c	Thu Apr  7 09:51:57 2005
+@@ -872,11 +872,17 @@
+      reference.  Strictly speaking, we need only check the return if this
+      is an In Out parameter, but it's probably best to err on the side of
+      passing more things by reference.  */
+-  return (0
++
++  int target_pass_by_ref = 0;
++
+ #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+-	  || FUNCTION_ARG_PASS_BY_REFERENCE (cum, TYPE_MODE (gnu_type),
+-					     gnu_type, 1)
++  INIT_CUMULATIVE_ARGS (cum, NULL_TREE, NULL_RTX, 0, 2);
++
++  target_pass_by_ref
++    = FUNCTION_ARG_PASS_BY_REFERENCE (cum, TYPE_MODE (gnu_type), gnu_type, 1);
+ #endif
++
++  return (target_pass_by_ref
+ 	  || targetm.calls.return_in_memory (gnu_type, NULL_TREE)
+ 	  || (AGGREGATE_TYPE_P (gnu_type)
+ 	      && (! host_integerp (TYPE_SIZE (gnu_type), 1)
+diff -r -b -u gcc-3.4-20050401/gcc/ada/mlib-tgt.adb gcc-3.4-20050401-avr/gcc/ada/mlib-tgt.adb
+--- gcc-3.4-20050401/gcc/ada/mlib-tgt.adb	Mon Jan  5 15:20:45 2004
++++ gcc-3.4-20050401-avr/gcc/ada/mlib-tgt.adb	Thu Apr  7 10:39:16 2005
+@@ -3,11 +3,11 @@
+ --                         GNAT COMPILER COMPONENTS                         --
+ --                                                                          --
+ --                             M L I B . T G T                              --
+---                            (Default Version)                             --
++--                              (AVR Version)                               --
+ --                                                                          --
+ --                                 B o d y                                  --
+ --                                                                          --
+---              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
++--              Copyright (C) 2005 Free Software Foundation, Inc.           --
+ --                                                                          --
+ -- GNAT is free software;  you can  redistribute it  and/or modify it under --
+ -- terms of the  GNU General Public License as published  by the Free Soft- --
+@@ -25,9 +25,14 @@
+ --                                                                          --
+ ------------------------------------------------------------------------------
+ 
+---  This is the default version which does not support libraries.
+---  All subprograms are dummies, because they are never called,
+---  except Support_For_Libraries which returns None.
++--  This package provides a set of target dependent routines to build
++--  static libraries.
++
++--  This is the AVR version of the body
++
++with MLib.Fil;
++with Namet;  use Namet;
++with Prj.Com;
+ 
+ package body MLib.Tgt is
+ 
+@@ -37,7 +42,7 @@
+ 
+    function Archive_Builder return String is
+    begin
+-      return "ar";
++      return "avr-ar";
+    end Archive_Builder;
+ 
+    -----------------------------
+@@ -55,7 +60,7 @@
+ 
+    function Archive_Ext return String is
+    begin
+-      return "";
++      return "a";
+    end Archive_Ext;
+ 
+    ---------------------
+@@ -64,7 +69,7 @@
+ 
+    function Archive_Indexer return String is
+    begin
+-      return "ranlib";
++      return "avr-ranlib";
+    end Archive_Indexer;
+ 
+    ---------------------------
+@@ -136,9 +141,8 @@
+    -------------------
+ 
+    function Is_Object_Ext (Ext : String) return Boolean is
+-      pragma Unreferenced (Ext);
+    begin
+-      return False;
++      return Ext = ".o";
+    end Is_Object_Ext;
+ 
+    --------------
+@@ -146,9 +150,8 @@
+    --------------
+ 
+    function Is_C_Ext (Ext : String) return Boolean is
+-      pragma Unreferenced (Ext);
+    begin
+-      return False;
++      return Ext = ".c";
+    end Is_C_Ext;
+ 
+    --------------------
+@@ -156,9 +159,8 @@
+    --------------------
+ 
+    function Is_Archive_Ext (Ext : String) return Boolean is
+-      pragma Unreferenced (Ext);
+    begin
+-      return False;
++      return Ext = ".a";
+    end Is_Archive_Ext;
+ 
+    -------------
+@@ -175,9 +177,32 @@
+    ------------------------
+ 
+    function Library_Exists_For (Project : Project_Id) return Boolean is
+-      pragma Unreferenced (Project);
+    begin
+-      return False;
++      if not Projects.Table (Project).Library then
++         Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &
++                       "for non library project");
++         return False; --  To avoid warning;
++
++      else
++         declare
++            Lib_Dir : constant String :=
++              Get_Name_String (Projects.Table (Project).Library_Dir);
++            Lib_Name : constant String :=
++              Get_Name_String (Projects.Table (Project).Library_Name);
++
++         begin
++            if Projects.Table (Project).Library_Kind = Static then
++               return Is_Regular_File
++                 (Lib_Dir & Directory_Separator & "lib" &
++                  Fil.Ext_To (Lib_Name, Archive_Ext));
++
++            else
++               return Is_Regular_File
++                 (Lib_Dir & Directory_Separator & "lib" &
++                  Fil.Ext_To (Lib_Name, DLL_Ext));
++            end if;
++         end;
++      end if;
+    end Library_Exists_For;
+ 
+    ---------------------------
+@@ -185,9 +210,31 @@
+    ---------------------------
+ 
+    function Library_File_Name_For (Project : Project_Id) return Name_Id is
+-      pragma Unreferenced (Project);
+    begin
+-      return No_Name;
++      if not Projects.Table (Project).Library then
++         Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
++                       "for non library project");
++         return No_Name;
++
++      else
++         declare
++            Lib_Name : constant String :=
++              Get_Name_String (Projects.Table (Project).Library_Name);
++
++         begin
++            Name_Len := 3;
++            Name_Buffer (1 .. Name_Len) := "lib";
++
++            if Projects.Table (Project).Library_Kind = Static then
++               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
++
++            else
++               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
++            end if;
++
++            return Name_Find;
++         end;
++      end if;
+    end Library_File_Name_For;
+ 
+    --------------------------------
+@@ -196,7 +243,7 @@
+ 
+    function Linker_Library_Path_Option return String_Access is
+    begin
+-      return null;
++      return new String'("-Wl,-rpath,");
+    end Linker_Library_Path_Option;
+ 
+    ----------------
+@@ -205,7 +252,7 @@
+ 
+    function Object_Ext return String is
+    begin
+-      return "";
++      return "o";
+    end Object_Ext;
+ 
+    ----------------
+@@ -232,7 +279,7 @@
+ 
+    function Support_For_Libraries return Library_Support is
+    begin
+-      return None;
++      return Static_Only;
+    end Support_For_Libraries;
+ 
+ end MLib.Tgt;
+diff -r -b -u gcc-3.4-20050401/gcc/ada/opt.ads gcc-3.4-20050401-avr/gcc/ada/opt.ads
+--- gcc-3.4-20050401/gcc/ada/opt.ads	Tue Jan 13 11:51:33 2004
++++ gcc-3.4-20050401-avr/gcc/ada/opt.ads	Thu Apr  7 09:51:57 2005
+@@ -433,6 +433,13 @@
+    --  some future release. It is no longer documented. The proper way
+    --  to get this effect is to use -gnatE and suppress elab checks.
+ 
++   Freestanding : Boolean := False;
++   --  GNATBIND
++   --  Set to True if no environment exists. This is typically the
++   --  case in embedded systems without an operating system. The main
++   --  program does not read command line parameters nor does it
++   --  return.
++
+    Full_Path_Name_For_Brief_Errors : Boolean := False;
+    --  GNAT, GNATMAKE, GNATCLEAN
+    --  When True, in Brief_Output mode, each error message line
+diff -r -b -u gcc-3.4-20050401/gcc/ada/utils.c gcc-3.4-20050401-avr/gcc/ada/utils.c
+--- gcc-3.4-20050401/gcc/ada/utils.c	Mon Nov 24 17:18:19 2003
++++ gcc-3.4-20050401-avr/gcc/ada/utils.c	Thu Apr  7 10:43:34 2005
+@@ -36,6 +36,7 @@
+ #include "ggc.h"
+ #include "debug.h"
+ #include "convert.h"
++#include "target.h"
+ 
+ #include "ada.h"
+ #include "types.h"
+@@ -1566,15 +1567,16 @@
+ 	break;
+ 
+       case ATTR_LINK_SECTION:
+-#ifdef ASM_OUTPUT_SECTION_NAME
++	if (targetm.have_named_sections)
++	  {
+ 	DECL_SECTION_NAME (decl)
+ 	  = build_string (IDENTIFIER_LENGTH (attr_list->name),
+ 			  IDENTIFIER_POINTER (attr_list->name));
+ 	DECL_COMMON (decl) = 0;
+-#else
++	  }
++	else
+ 	post_error ("?section attributes are not supported for this target",
+ 		    attr_list->error_point);
+-#endif
+ 	break;
+       }
+ }
+diff -r -b -u gcc-3.4-20050401/gcc/config/avr/avr.h gcc-3.4-20050401-avr/gcc/config/avr/avr.h
+--- gcc-3.4-20050401/gcc/config/avr/avr.h	Tue Mar  9 02:59:55 2004
++++ gcc-3.4-20050401-avr/gcc/config/avr/avr.h	Thu Apr  7 09:51:58 2005
+@@ -459,7 +459,7 @@
+    `GENERAL_REGS', they will not be used unless some pattern's
+    constraint asks for one.  */
+ 
+-#define MODES_TIEABLE_P(MODE1, MODE2) 0
++#define MODES_TIEABLE_P(MODE1, MODE2) 1
+ /* A C expression that is nonzero if it is desirable to choose
+    register allocation so as to avoid move instructions between a
+    value of mode MODE1 and a value of mode MODE2.
+@@ -2479,4 +2479,5 @@
+ /* zero register r1 */
+ #define ZERO_REGNO 1
+ 
++#define DWARF2_DEBUGGING_INFO 1
+ #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+diff -r -b -u gcc-3.4-20050401/gcc/fixinc/mkfixinc.sh gcc-3.4-20050401-avr/gcc/fixinc/mkfixinc.sh
+--- gcc-3.4-20050401/gcc/fixinc/mkfixinc.sh	Fri Oct 24 17:47:51 2003
++++ gcc-3.4-20050401-avr/gcc/fixinc/mkfixinc.sh	Thu Apr  7 09:51:58 2005
+@@ -37,6 +37,7 @@
+ case $machine in
+     alpha*-dec-*vms* | \
+     arm-semi-aof | \
++    avr-* | \
+     hppa1.1-*-osf* | \
+     hppa1.1-*-bsd* | \
+     i370-*-openedition | \
+--- gcc-3.4-20050401/gcc/toplev.c	2005-03-09 01:50:25.000000000 +0100
++++ gcc-3.4-20050401-avr/gcc/toplev.c	2005-04-20 23:19:38.857435200 +0200
+@@ -4479,7 +4479,8 @@
+ 
+ #ifndef OBJECT_FORMAT_ELF
+   if (flag_function_sections && write_symbols != NO_DEBUG)
+-    warning ("-ffunction-sections may affect debugging on some targets");
++    /*null*/;
++  /* warning ("-ffunction-sections may affect debugging on some targets"); */
+ #endif
+ 
+     /* The presence of IEEE signaling NaNs, implies all math can trap.  */

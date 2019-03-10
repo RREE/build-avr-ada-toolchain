@@ -1,0 +1,15 @@
+--- gcc-4_1-branch/gcc/toplev.c
++++ gcc-4_1-branch/gcc/toplev.c
+@@ -1761,8 +1761,9 @@
+     }
+
+ #ifndef OBJECT_FORMAT_ELF
+-  if (flag_function_sections && write_symbols != NO_DEBUG)
+-    warning (0, "-ffunction-sections may affect debugging on some targets");
++  if (flag_function_sections && write_symbols != NO_DEBUG)
++    /*null*/ ;
++   /* warning ("-ffunction-sections may affect debugging on some targets"); */
+ #endif
+
+   /* The presence of IEEE signaling NaNs, implies all math can trap.  */
+

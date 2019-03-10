@@ -1,0 +1,45 @@
+--- gcc/ada/gnat1drv.adb~	2009-12-01 09:52:51 +0000
++++ gcc/ada/gnat1drv.adb	2010-09-07 20:30:25 +0000
+@@ -619,6 +619,42 @@
+                     Current_Year &
+                     ", Free Software Foundation, Inc.");
+          Write_Eol;
++         Write_Eol;
++         Write_Str ("Source Search Path:");
++         Write_Eol;
++
++         for J in 1 .. Nb_Dir_In_Src_Search_Path loop
++            Write_Str ("   ");
++
++            if Dir_In_Src_Search_Path (J)'Length = 0 then
++               Write_Str ("<Current_Directory>");
++            else
++               Write_Str (To_Host_Dir_Spec
++                          (Dir_In_Src_Search_Path (J).all, True).all);
++            end if;
++
++            Write_Eol;
++         end loop;
++
++         Write_Eol;
++         Write_Eol;
++         Write_Str ("Object Search Path:");
++         Write_Eol;
++
++         for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
++            Write_Str ("   ");
++
++            if Dir_In_Obj_Search_Path (J)'Length = 0 then
++               Write_Str ("<Current_Directory>");
++            else
++               Write_Str (To_Host_Dir_Spec
++                          (Dir_In_Obj_Search_Path (J).all, True).all);
++            end if;
++
++            Write_Eol;
++         end loop;
++
++         Write_Eol;
+       end if;
+ 
+       --  Check we do not have more than one source file, this happens only in

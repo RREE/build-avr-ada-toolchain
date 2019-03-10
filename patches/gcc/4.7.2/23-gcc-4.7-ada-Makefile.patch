@@ -1,0 +1,14 @@
+
+--- configure.orig	2012-01-05 03:25:04.000000000 +0100
++++ configure	2012-01-22 12:37:59.718750000 +0100
+@@ -2981,10 +2981,6 @@
+   ENABLE_LIBADA=yes
+ fi
+ 
+-if test "${ENABLE_LIBADA}" != "yes" ; then
+-  noconfigdirs="$noconfigdirs gnattools"
+-fi
+-
+ # Check whether --enable-libssp was given.
+ if test "${enable_libssp+set}" = set; then :
+   enableval=$enable_libssp; ENABLE_LIBSSP=$enableval

@@ -1,0 +1,98 @@
+Index: gcc/ada/gnatbind.adb
+===================================================================
+--- gcc/ada/gnatbind.adb	
++++ gcc/ada/gnatbind.adb	
+@@ -332,6 +332,11 @@
+          then
+             Add_Lib_Search_Dir (Argv (4 .. Argv'Last));
+ 
++         --  -freestanding
++
++         elsif Argv (2 .. Argv'Last) = "freestanding" then
++            Opt.Freestanding := True;
++
+          --  -nostdlib
+ 
+          elsif Argv (2 .. Argv'Last) = "nostdlib" then
+Index: gcc/ada/bindgen.adb
+===================================================================
+--- gcc/ada/bindgen.adb	
++++ gcc/ada/bindgen.adb	
+@@ -1296,6 +1296,10 @@
+             WBI ("      procedure Ada_Main_Program;");
+          end if;
+ 
++         if Opt.Freestanding then
++            WBI ("      pragma No_Return (Ada_Main_Program);");
++         end if;
++
+          Set_String ("      pragma Import (Ada, Ada_Main_Program, """);
+          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+          Set_Main_Program_Name;
+@@ -1318,7 +1322,7 @@
+       --  The reference stops Ada_Main_Program_Name from being optimized
+       --  away by smart linkers, such as the AiX linker.
+ 
+-      if Bind_Main_Program then
++      if Bind_Main_Program and then not Opt.Freestanding then
+          WBI
+            ("      Ensure_Reference : System.Address := " &
+             "Ada_Main_Program_Name'Address;");
+@@ -1375,7 +1379,9 @@
+       WBI ("      " & Ada_Init_Name.all & ";");
+ 
+       if not No_Main_Subprogram then
+-         WBI ("      Break_Start;");
++         if not Opt.Freestanding then
++            WBI ("      Break_Start;");
++         end if;
+ 
+          if ALIs.Table (ALIs.First).Main_Program = Proc then
+             WBI ("      Ada_Main_Program;");
+@@ -1991,7 +1997,7 @@
+       --  to a symbol duplication during the link (for instance when a
+       --  C program uses 2 Ada libraries)
+ 
+-      if Bind_Main_Program then
++      if Bind_Main_Program and then not Opt.Freestanding then
+          WBI ("");
+          WBI ("   GNAT_Version : constant String :=");
+          WBI ("                    ""GNAT Version: " &
+@@ -2077,6 +2083,10 @@
+             end if;
+          end if;
+ 
++         if Opt.Freestanding then
++            WBI ("   pragma No_Return (" & Get_Main_Name & ");");
++         end if;
++
+          WBI ("   pragma Export (C, " & Get_Main_Name & ", """ &
+            Get_Main_Name & """);");
+       end if;
+@@ -2437,7 +2447,7 @@
+    --  Start of processing for Gen_Versions_Ada
+ 
+    begin
+-      if Bind_For_Library then
++      if Bind_For_Library or else Opt.Freestanding then
+ 
+          --  When building libraries, the version number of each unit can
+          --  not be computed, since the binder does not know the full list
+Index: gcc/ada/opt.ads
+===================================================================
+--- gcc/ada/opt.ads	
++++ gcc/ada/opt.ads	
+@@ -458,6 +458,13 @@
+    --  GNATMAKE, GPRMAKE
+    --  Set to force recompilations even when the objects are up-to-date.
+ 
++   Freestanding : Boolean := False;
++   --  GNATBIND
++   --  Set to True if no environment exists. This is typically the
++   --  case in embedded systems without an operating system. The main
++   --  program does not read command line parameters nor does it
++   --  return.
++
+    Full_Path_Name_For_Brief_Errors : Boolean := False;
+    --  GNAT, GNATMAKE, GNATCLEAN, GPRMAKE
+    --  When True, in Brief_Output mode, each error message line

@@ -1,0 +1,22 @@
+--- gcc/ada/ali.adb~	2008-08-20 16:11:55 +0000
++++ gcc/ada/ali.adb	2010-11-27 20:03:52 +0000
+@@ -190,7 +190,7 @@
+
+       function Get_Name
+         (Ignore_Spaces  : Boolean := False;
+-         Ignore_Special : Boolean := False)return Name_Id;
++         Ignore_Special : Boolean := False) return Name_Id;
+       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
+       --  length in Name_Len, as well as being returned in Name_Id form).
+       --  If Lower is set to True then the Name_Buffer will be converted to
+--- gcc/ada/targparm.adb~	2008-07-30 13:03:32 +0000
++++ gcc/ada/targparm.adb	2010-11-27 20:12:21 +0000
+@@ -408,7 +408,7 @@
+
+          --  Suppress_Exception_Locations
+
+-         elsif System_Text (P .. P + 34) =
++         elsif System_Text (P .. P + 35) =
+                                 "pragma Suppress_Exception_Locations;"
+          then
+             P := P + 35;

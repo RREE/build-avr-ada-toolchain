@@ -1,0 +1,50 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-15 16:09:26.000000000 +0300
++++ binutils/size.c	2011-09-15 16:08:10.000000000 +0300
+@@ -95,12 +95,14 @@ static int return_code = 0;
+ #define AVR2K 2048UL
+ #define AVR4K 4096UL
+ #define AVR8K 8192UL
++#define AVR14K 14336UL
+ #define AVR16K 16384UL
+ #define AVR20K 20480UL
+ #define AVR24K 24576UL
+ #define AVR32K 32768UL
+ #define AVR36K 36864UL
+ #define AVR40K 40960UL
++#define AVR52K 53248UL
+ #define AVR64K 65536UL
+ #define AVR68K 69632UL
+ #define AVR128K 131072UL
+@@ -204,6 +206,8 @@ avr_device_t avr[] =
+ 	{"atmega64hve",   AVR64K,  AVR4K,  AVR1K},
+ 	{"atmega64m1",    AVR64K,  AVR4K,  AVR2K},
+ 	{"m3000",         AVR64K,  AVR4K,  0UL},
++	
++	{"atmxt336s",     AVR52K,  AVR14K, 0UL},
+ 
+ 	{"atmega406",     AVR40K,  AVR2K,  AVR512},
+ 
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-15 16:09:26.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-15 16:08:10.000000000 +0300
+@@ -270,6 +270,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega2561", AVR_ISA_AVR6,    bfd_mach_avr6},
+   {"atmega256rfa2", AVR_ISA_AVR6, bfd_mach_avr6},
+   {"atmega256rfr2", AVR_ISA_AVR6, bfd_mach_avr6},
++  {"atmxt336s",   AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+   {"atxmega16a4", AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+   {"atxmega16a4u",AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+   {"atxmega16d4", AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-15 16:09:26.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-15 16:08:10.000000000 +0300
+@@ -88,7 +88,7 @@ atmega2560, atmega2561, atmega256rfa2, a
+ 
+ Instruction set avrxmega2 is for the XMEGA AVR core with 8K to 64K program
+ memory space and less than 64K data space (MCU types: atxmega16a4, atxmega16a4u,
+-atxmega16d4, atxmega32a4, atxmega32a4u, atxmega32d4, atxmega32x1).
++atxmega16d4, atxmega32a4, atxmega32a4u, atxmega32d4, atxmega32x1, atmxt336s).
+ 
+ Instruction set avrxmega3 is for the XMEGA AVR core with 8K to 64K program
+ memory space and greater than 64K data space (MCU types: none).

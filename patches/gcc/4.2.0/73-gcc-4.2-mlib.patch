@@ -1,0 +1,195 @@
+Index: gcc/ada/make.adb
+===================================================================
+--- gcc/ada/make.adb	
++++ gcc/ada/make.adb	
+@@ -4490,6 +4490,11 @@
+                   --  Warn the user, if necessary, so that he is not surprized
+                   --  that specific switches are not taken into account.
+ 
++                  if Opt.Verbose_Mode then
++                     Write_Str ("Init library build (RE1)");
++                     Write_Eol;
++                  end if;
++
+                   declare
+                      Defaults : constant Variable_Value :=
+                        Prj.Util.Value_Of
+@@ -5127,6 +5132,11 @@
+                      end loop;
+                   end;
+ 
++                  if Opt.Verbose_Mode then
++                     Write_Str ("build library build (RE2)");
++                     Write_Eol;
++                  end if;
++
+                   --  Build the libraries, if any need to be built
+ 
+                   for J in 1 .. Library_Projs.Last loop
+Index: gcc/ada/mlib-tgt.adb
+===================================================================
+--- gcc/ada/mlib-tgt.adb	
++++ gcc/ada/mlib-tgt.adb	
+@@ -3,11 +3,12 @@
+ --                         GNAT COMPILER COMPONENTS                         --
+ --                                                                          --
+ --                             M L I B . T G T                              --
+---                            (Default Version)                             --
++--                            (AVR Version)                                 --
+ --                                                                          --
+ --                                 B o d y                                  --
+ --                                                                          --
+ --                     Copyright (C) 2001-2005, AdaCore                     --
++--                     Copyright (C) 2001-2005, Rolf Ebert                  --
+ --                                                                          --
+ -- GNAT is free software;  you can  redistribute it  and/or modify it under --
+ -- terms of the  GNU General Public License as published  by the Free Soft- --
+@@ -25,10 +26,15 @@
+ --                                                                          --
+ ------------------------------------------------------------------------------
+ 
+---  This is the default version which does not support libraries.
+---  All subprograms are dummies, because they are never called,
+---  except Support_For_Libraries which returns None.
++--  This package provides a set of target dependent routines to build
++--  static libraries.
+ 
++--  This is the AVR version of the body
++
++with MLib.Fil;
++with Namet;  use Namet;
++with Prj.Com;
++
+ package body MLib.Tgt is
+ 
+    ---------------------
+@@ -55,7 +61,7 @@
+ 
+    function Archive_Ext return String is
+    begin
+-      return "";
++      return "a";
+    end Archive_Ext;
+ 
+    ---------------------
+@@ -143,9 +149,8 @@
+    -------------------
+ 
+    function Is_Object_Ext (Ext : String) return Boolean is
+-      pragma Unreferenced (Ext);
+    begin
+-      return False;
++      return Ext = ".o";
+    end Is_Object_Ext;
+ 
+    --------------
+@@ -153,9 +158,8 @@
+    --------------
+ 
+    function Is_C_Ext (Ext : String) return Boolean is
+-      pragma Unreferenced (Ext);
+    begin
+-      return False;
++      return Ext = ".c";
+    end Is_C_Ext;
+ 
+    --------------------
+@@ -163,9 +167,8 @@
+    --------------------
+ 
+    function Is_Archive_Ext (Ext : String) return Boolean is
+-      pragma Unreferenced (Ext);
+    begin
+-      return False;
++      return Ext = ".a";
+    end Is_Archive_Ext;
+ 
+    -------------
+@@ -184,10 +187,32 @@
+    function Library_Exists_For
+      (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
+    is
+-      pragma Unreferenced (Project);
+-      pragma Unreferenced (In_Tree);
+    begin
+-      return False;
++      if not In_Tree.Projects.Table (Project).Library then
++         Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &
++                         "for non library project");
++         return False; --  To avoid warning;
++
++      else
++         declare
++            Lib_Dir : constant String :=
++              Get_Name_String (In_Tree.Projects.Table (Project).Library_Dir);
++            Lib_Name : constant String :=
++              Get_Name_String (In_Tree.Projects.Table (Project).Library_Name);
++
++         begin
++            if In_Tree.Projects.Table (Project).Library_Kind = Static then
++               return Is_Regular_File
++                 (Lib_Dir & Directory_Separator & "lib" &
++                    Fil.Ext_To (Lib_Name, Archive_Ext));
++
++            else
++               return Is_Regular_File
++                 (Lib_Dir & Directory_Separator & "lib" &
++                    Fil.Ext_To (Lib_Name, DLL_Ext));
++            end if;
++         end;
++      end if;
+    end Library_Exists_For;
+ 
+    ---------------------------
+@@ -198,10 +223,30 @@
+      (Project : Project_Id;
+       In_Tree : Project_Tree_Ref) return Name_Id
+    is
+-      pragma Unreferenced (Project);
+-      pragma Unreferenced (In_Tree);
+    begin
+-      return No_Name;
++      if not In_Tree.Projects.Table (Project).Library then
++         Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
++                         "for non library project");
++         return No_Name;
++
++      else
++         declare
++            Lib_Name : constant String :=
++              Get_Name_String (In_Tree.Projects.Table (Project).Library_Name);
++
++         begin
++            Name_Len := 3;
++            Name_Buffer (1 .. Name_Len) := "lib";
++
++            if In_Tree.Projects.Table (Project).Library_Kind = Static then
++               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
++
++            else
++               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
++            end if;
++            return Name_Find;
++         end;
++      end if;
+    end Library_File_Name_For;
+ 
+    ----------------
+@@ -210,7 +255,7 @@
+ 
+    function Object_Ext return String is
+    begin
+-      return "";
++      return "o";
+    end Object_Ext;
+ 
+    ----------------
+@@ -237,7 +282,7 @@
+ 
+    function Support_For_Libraries return Library_Support is
+    begin
+-      return None;
++      return Static_Only;
+    end Support_For_Libraries;
+ 
+ end MLib.Tgt;

@@ -1,0 +1,54 @@
+This is a patch to support -fstack-usage/-fcallgraph-info=su for the avr target.
+
+Please report cases where the actual stack usage is larger than the calculate
+stack usage!
+
+Index: gcc-4_1-branch/gcc/config/avr/avr.c
+===================================================================
+--- gcc-4_1-branch/gcc/config/avr/avr.c	(revision 114895)
++++ gcc-4_1-branch/gcc/config/avr/avr.c	(working copy)
+@@ -66,6 +66,7 @@
+ static bool avr_assemble_integer (rtx, unsigned int, int);
+ static void avr_file_start (void);
+ static void avr_file_end (void);
++static HOST_WIDE_INT avr_get_static_stack_usage (void);
+ static void avr_output_function_prologue (FILE *, HOST_WIDE_INT);
+ static void avr_output_function_epilogue (FILE *, HOST_WIDE_INT);
+ static void avr_insert_attributes (tree, tree *);
+@@ -248,6 +290,8 @@
+ #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
+ #undef TARGET_SECTION_TYPE_FLAGS
+ #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
++#undef TARGET_GET_STATIC_STACK_USAGE
++#define TARGET_GET_STATIC_STACK_USAGE avr_get_static_stack_usage
+ #undef TARGET_RTX_COSTS
+ #define TARGET_RTX_COSTS avr_rtx_costs
+ #undef TARGET_ADDRESS_COST
+@@ -4876,7 +4896,27 @@
+       reg_alloc_order[i] = order[i];
+ }
+ 
++/* Return the maximum static stack usage for the current function.  */
+ 
++static HOST_WIDE_INT
++avr_get_static_stack_usage (void)
++{
++  int r = avr_pc_size; /* PC size 2/3 byte (call)*/
++  if (interrupt_function_p (current_function_decl)
++      || signal_function_p (current_function_decl))
++    r += 3;  /* push zero_reg, tmp_reg, in tmp_reg,SREG,  
++		push tmp_reg */
++
++  r += get_frame_size ();
++
++  if (frame_pointer_needed)
++    r += 2; /* push r28, push r29 */
++	
++  r += avr_regs_to_save (0);
++  return r;
++}
++
++
+ /* Mutually recursive subroutine of avr_rtx_cost for calculating the
+    cost of an RTX operand given its context.  X is the rtx of the
+    operand, MODE is its mode, and OUTER is the rtx_code of this

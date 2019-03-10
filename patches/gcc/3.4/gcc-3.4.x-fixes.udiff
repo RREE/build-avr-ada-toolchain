@@ -1,0 +1,132 @@
+diff -r -b -u gcc-3.4-20050401/gcc/ada/misc.c gcc-3.4-20050401-avr/gcc/ada/misc.c
+--- gcc-3.4-20050401/gcc/ada/misc.c	Tue Mar  9 02:59:53 2004
++++ gcc-3.4-20050401-avr/gcc/ada/misc.c	Thu Apr  7 09:51:57 2005
+@@ -872,11 +872,17 @@
+      reference.  Strictly speaking, we need only check the return if this
+      is an In Out parameter, but it's probably best to err on the side of
+      passing more things by reference.  */
+-  return (0
++
++  int target_pass_by_ref = 0;
++
+ #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+-	  || FUNCTION_ARG_PASS_BY_REFERENCE (cum, TYPE_MODE (gnu_type),
+-					     gnu_type, 1)
++  INIT_CUMULATIVE_ARGS (cum, NULL_TREE, NULL_RTX, 0, 2);
++
++  target_pass_by_ref
++    = FUNCTION_ARG_PASS_BY_REFERENCE (cum, TYPE_MODE (gnu_type), gnu_type, 1);
+ #endif
++
++  return (target_pass_by_ref
+ 	  || targetm.calls.return_in_memory (gnu_type, NULL_TREE)
+ 	  || (AGGREGATE_TYPE_P (gnu_type)
+ 	      && (! host_integerp (TYPE_SIZE (gnu_type), 1)
+diff -r -b -u gcc-3.4-20050401/gcc/ada/utils.c gcc-3.4-20050401-avr/gcc/ada/utils.c
+--- gcc-3.4-20050401/gcc/ada/utils.c	Mon Nov 24 17:18:19 2003
++++ gcc-3.4-20050401-avr/gcc/ada/utils.c	Thu Apr  7 10:43:34 2005
+@@ -36,6 +36,7 @@
+ #include "ggc.h"
+ #include "debug.h"
+ #include "convert.h"
++#include "target.h"
+ 
+ #include "ada.h"
+ #include "types.h"
+@@ -1566,15 +1567,16 @@
+ 	break;
+ 
+       case ATTR_LINK_SECTION:
+-#ifdef ASM_OUTPUT_SECTION_NAME
++	if (targetm.have_named_sections)
++	  {
+ 	DECL_SECTION_NAME (decl)
+ 	  = build_string (IDENTIFIER_LENGTH (attr_list->name),
+ 			  IDENTIFIER_POINTER (attr_list->name));
+ 	DECL_COMMON (decl) = 0;
+-#else
++	  }
++	else
+ 	post_error ("?section attributes are not supported for this target",
+ 		    attr_list->error_point);
+-#endif
+ 	break;
+       }
+ }
+diff -r -b -u gcc-3.4-20050401/gcc/config/avr/avr.h gcc-3.4-20050401-avr/gcc/config/avr/avr.h
+--- gcc-3.4-20050401/gcc/config/avr/avr.h	Tue Mar  9 02:59:55 2004
++++ gcc-3.4-20050401-avr/gcc/config/avr/avr.h	Thu Apr  7 09:51:58 2005
+@@ -2479,4 +2479,5 @@
+ /* zero register r1 */
+ #define ZERO_REGNO 1
+ 
++#define DWARF2_DEBUGGING_INFO 1
+ #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+diff -r -b -u gcc-3.4-20050401/gcc/fixinc/mkfixinc.sh gcc-3.4-20050401-avr/gcc/fixinc/mkfixinc.sh
+--- gcc-3.4-20050401/gcc/fixinc/mkfixinc.sh	Fri Oct 24 17:47:51 2003
++++ gcc-3.4-20050401-avr/gcc/fixinc/mkfixinc.sh	Thu Apr  7 09:51:58 2005
+@@ -37,6 +37,7 @@
+ case $machine in
+     alpha*-dec-*vms* | \
+     arm-semi-aof | \
++    avr-* | \
+     hppa1.1-*-osf* | \
+     hppa1.1-*-bsd* | \
+     i370-*-openedition | \
+--- gcc-3.4-20050401/gcc/toplev.c	2005-03-09 01:50:25.000000000 +0100
++++ gcc-3.4-20050401-avr/gcc/toplev.c	2005-04-20 23:19:38.857435200 +0200
+@@ -4479,7 +4479,8 @@
+ 
+ #ifndef OBJECT_FORMAT_ELF
+   if (flag_function_sections && write_symbols != NO_DEBUG)
+-    warning ("-ffunction-sections may affect debugging on some targets");
++    /*null*/;
++  /* warning ("-ffunction-sections may affect debugging on some targets"); */
+ #endif
+ 
+     /* The presence of IEEE signaling NaNs, implies all math can trap.  */
+
+===================================================================
+RCS file: /cvs/gcc/gcc/gcc/ada/exp_ch2.adb,v
+retrieving revision 1.9
+retrieving revision 1.10
+diff -u -r1.9 -r1.10
+--- gcc/gcc/ada/exp_ch2.adb	2004/03/02 13:50:13	1.9
++++ gcc/gcc/ada/exp_ch2.adb	2004/05/03 11:58:28	1.10
+@@ -41,6 +41,7 @@
+ with Sem_Util; use Sem_Util;
+ with Sem_Warn; use Sem_Warn;
+ with Sinfo;    use Sinfo;
++with Snames;   use Snames;
+ with Stand;    use Stand;
+ with Tbuild;   use Tbuild;
+ with Uintp;    use Uintp;
+@@ -216,6 +217,13 @@
+          --  issue that they do not get replaced when they could be).
+ 
+          and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
++
++         --  Same for Asm_Input and Asm_Output attribute references.
++
++         and then not (Nkind (Parent (N)) = N_Attribute_Reference
++           and then (Attribute_Name (Parent (N)) = Name_Asm_Input
++             or else Attribute_Name (Parent (N)) = Name_Asm_Output))
++
+       then
+          --  Case of Current_Value is a compile time known value
+ 
+==================================================================
+diff -u gcc-3.4.4/gcc/config/avr/avr.h~ gcc-3.4.4/gcc/config/avr/avr.h
+--- gcc-3.4.4/gcc/config/avr/avr.h~     Mon Aug  1 14:27:32 2005
++++ gcc-3.4.4/gcc/config/avr/avr.h      Mon Aug  1 14:30:57 2005
+@@ -459,7 +459,7 @@
+    `GENERAL_REGS', they will not be used unless some pattern's
+    constraint asks for one.  */
+ 
+-#define MODES_TIEABLE_P(MODE1, MODE2) 0
++#define MODES_TIEABLE_P(MODE1, MODE2) 1
+ /* A C expression that is nonzero if it is desirable to choose
+    register allocation so as to avoid move instructions between a
+    value of mode MODE1 and a value of mode MODE2.
+

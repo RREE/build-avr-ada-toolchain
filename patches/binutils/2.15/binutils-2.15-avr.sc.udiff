@@ -1,0 +1,52 @@
+--- binutils-2.15/ld/scripttempl/avr.sc~	2002-06-02 01:28:59.000000000 +0200
++++ binutils-2.15/ld/scripttempl/avr.sc	2005-01-07 13:45:29.402862400 +0100
+@@ -74,7 +74,7 @@
+   /* Internal text space or external memory */
+   .text :
+   {
+-    *(.vectors)
++    KEEP(*(.vectors))
+ 
+     ${CONSTRUCTING+ __ctors_start = . ; }
+     ${CONSTRUCTING+ *(.ctors) }
+@@ -86,20 +86,21 @@
+     *(.progmem.gcc*)
+     *(.progmem*)
+     ${RELOCATING+. = ALIGN(2);}
+-    *(.init0)  /* Start here after reset.  */
+-    *(.init1)
+-    *(.init2)  /* Clear __zero_reg__, set up stack pointer.  */
+-    *(.init3)
+-    *(.init4)  /* Initialize data and BSS.  */
+-    *(.init5)
+-    *(.init6)  /* C++ constructors.  */
+-    *(.init7)
+-    *(.init8)
+-    *(.init9)  /* Call main().  */
++    KEEP(*(.init0))  /* Start here after reset.  */
++    KEEP(*(.init1))
++    KEEP(*(.init2))  /* Clear __zero_reg__, set up stack pointer.  */
++    KEEP(*(.init3))
++    KEEP(*(.init4))  /* Initialize data and BSS.  */
++    KEEP(*(.init5))
++    KEEP(*(.init6))  /* C++ constructors.  */
++    KEEP(*(.init7))
++    KEEP(*(.init8))
++    KEEP(*(.init9))  /* Call main().  */
+     *(.text)
+     ${RELOCATING+. = ALIGN(2);}
+     *(.text.*)
+     ${RELOCATING+. = ALIGN(2);}
++    KEEP(*(.fini?))
+     *(.fini9)  /* _exit() starts here.  */
+     *(.fini8)
+     *(.fini7)
+@@ -117,6 +118,8 @@
+   {
+     ${RELOCATING+ PROVIDE (__data_start = .) ; }
+     *(.data)
++    ${RELOCATING+. = ALIGN(2);}
++    *(.data.*)
+     *(.gnu.linkonce.d*)
+     ${RELOCATING+. = ALIGN(2);}
+     ${RELOCATING+ _edata = . ; }

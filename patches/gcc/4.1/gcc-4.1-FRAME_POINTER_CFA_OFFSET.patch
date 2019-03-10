@@ -1,0 +1,10 @@
+Index: gcc-4_1-branch/gcc/config/avr/avr.h
+===================================================================
+@@ -863,3 +968,6 @@
+ #define ZERO_REGNO 1
+
+ #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
++
++/* Offset from the frame pointer register value to the top of the stack.  */
++#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
+

@@ -1,0 +1,65 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-08 17:12:34.000000000 +0300
++++ binutils/size.c	2011-09-08 17:19:37.000000000 +0300
+@@ -155,8 +155,10 @@ avr_device_t avr[] =
+ 	{"at90usb1286",   AVR128K, AVR8K,  AVR4K},
+ 	{"at90usb1287",   AVR128K, AVR8K,  AVR4K},
+ 	{"atmega128",     AVR128K, AVR4K,  AVR4K},
++	{"atmega128a",    AVR128K, AVR4K,  AVR4K},
+ 	{"atmega1280",    AVR128K, AVR8K,  AVR4K},
+ 	{"atmega1281",    AVR128K, AVR8K,  AVR4K},
++	{"atmega1284",    AVR128K, AVR16K, AVR4K},
+ 	{"atmega1284p",   AVR128K, AVR16K, AVR4K},
+ 	{"atmega128rfa1", AVR128K, AVR16K, AVR4K},
+ 	{"atmega103",     AVR128K, 4000UL, AVR4K},
+@@ -296,6 +298,7 @@ avr_device_t avr[] =
+ 	{"at90usb82",     AVR8K,   AVR512, AVR512},
+ 	{"ata6289",       AVR8K,   AVR512, 320UL},
+ 	{"atmega8",       AVR8K,   AVR1K,  AVR512},
++	{"atmega8a",      AVR8K,   AVR1K,  AVR512},
+ 	{"atmega8515",    AVR8K,   AVR512, AVR512},
+ 	{"atmega8535",    AVR8K,   AVR512, AVR512},
+ 	{"atmega88",      AVR8K,   AVR1K,  AVR512},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-08 17:12:34.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-08 17:17:16.000000000 +0300
+@@ -145,6 +145,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega32u2", AVR_ISA_AVR35,   bfd_mach_avr35},
+   {"attiny1634", AVR_ISA_AVR35,   bfd_mach_avr35},
+   {"atmega8",    AVR_ISA_M8,      bfd_mach_avr4},
++  {"atmega8a",   AVR_ISA_M8,      bfd_mach_avr4},
+   {"atmega48",   AVR_ISA_AVR4,    bfd_mach_avr4},
+   {"atmega48a",  AVR_ISA_AVR4,    bfd_mach_avr4},
+   {"atmega48pa", AVR_ISA_AVR4,    bfd_mach_avr4},
+@@ -254,8 +255,10 @@ static struct mcu_type_s mcu_types[] =
+   {"at94k",      AVR_ISA_94K,     bfd_mach_avr5},
+   {"m3000",      AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega128",  AVR_ISA_AVR51,   bfd_mach_avr51},
++  {"atmega128a", AVR_ISA_AVR51,   bfd_mach_avr51},
+   {"atmega1280", AVR_ISA_AVR51,   bfd_mach_avr51},
+   {"atmega1281", AVR_ISA_AVR51,   bfd_mach_avr51},
++  {"atmega1284", AVR_ISA_AVR51,   bfd_mach_avr51},
+   {"atmega1284p",AVR_ISA_AVR51,   bfd_mach_avr51},
+   {"atmega128rfa1",AVR_ISA_AVR51, bfd_mach_avr51},
+   {"atmega128rfa2",AVR_ISA_AVR51, bfd_mach_avr51},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-08 17:12:34.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-08 17:23:11.000000000 +0300
+@@ -59,7 +59,7 @@ instructions (MCU types: attiny167, atti
+ atmega8u2, atmega16u2, atmega32u2).
+ 
+ Instruction set avr4 is for the enhanced AVR core with up to 8K program
+-memory space (MCU types: atmega48, atmega48a, atmega48pa, atmega48p,atmega8,
++memory space (MCU types: atmega48, atmega48a, atmega48pa, atmega48p,atmega8, atmega8a,
+ atmega88, atmega88a, atmega88p, atmega88pa, atmega8515, atmega8535, atmega8hva,
+ at90pwm1,at90pwm2, at90pwm2b, at90pwm3, at90pwm3b, at90pwm81).
+ 
+@@ -80,7 +80,7 @@ atmega32c1, atmega64c1, atmega64m1, atme
+ atmega16u4, atmega32u4, atmega32u6, at90usb646, at90usb647, at94k, at90scr100).
+ 
+ Instruction set avr51 is for the enhanced AVR core with exactly 128K program
+-memory space (MCU types: atmega128, atmega1280, atmega1281, atmega1284p,
++memory space (MCU types: atmega128, atmega128a, atmega1280, atmega1281, atmega1284, atmega1284p,
+ atmega128rfa1, atmega128rfa2, atmega128rfr2, at90can128, at90usb1286, at90usb1287, m3000).
+ 
+ Instruction set avr6 is for the enhanced AVR core with a 3-byte PC (MCU types:

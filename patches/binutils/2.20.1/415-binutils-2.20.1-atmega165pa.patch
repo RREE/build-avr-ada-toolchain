@@ -1,0 +1,34 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2011-09-05 16:07:24.000000000 +0300
++++ binutils/size.c	2011-09-05 16:07:29.000000000 +0300
+@@ -254,6 +254,7 @@ avr_device_t avr[] =
+ 	{"atmega165a",    AVR16K,  AVR1K,  AVR512},
+ 	{"atmega165",     AVR16K,  AVR1K,  AVR512},
+ 	{"atmega165p",    AVR16K,  AVR1K,  AVR512},
++	{"atmega165pa",   AVR16K,  AVR1K,  AVR512},
+ 	{"atmega168",     AVR16K,  AVR1K,  AVR512},
+ 	{"atmega168a",    AVR16K,  AVR1K,  AVR512},
+ 	{"atmega168p",    AVR16K,  AVR1K,  AVR512},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2011-09-05 16:07:24.000000000 +0300
++++ gas/config/tc-avr.c	2011-09-05 16:07:29.000000000 +0300
+@@ -172,6 +172,7 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega165",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega165a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega165p", AVR_ISA_AVR5,    bfd_mach_avr5},
++  {"atmega165pa",AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega168",  AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega168a", AVR_ISA_AVR5,    bfd_mach_avr5},
+   {"atmega168p", AVR_ISA_AVR5,    bfd_mach_avr5},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2011-09-05 16:07:24.000000000 +0300
++++ gas/doc/c-avr.texi	2011-09-05 16:07:29.000000000 +0300
+@@ -65,7 +65,7 @@ at90pwm1,at90pwm2, at90pwm2b, at90pwm3, 
+ 
+ Instruction set avr5 is for the enhanced AVR core with up to 128K program
+ memory space (MCU types: at90pwm161, atmega16, atmega16a, atmega161, atmega162,
+-atmega163, atmega164a, atmega164p, atmega165, atmega165a, atmega165p, atmega168, 
++atmega163, atmega164a, atmega164p, atmega165, atmega165a, atmega165p, atmega165pa, atmega168, 
+ atmega168a, atmega168p, atmega169, atmega169p, atmega169pa,
+ atmega32, atmega323, atmega324a, atmega324p, atmega324pa, atmega325, atmega325a,
+ atmega325p, atmega325pa, atmega3250, atmega3250a, atmega3250p, atmega3250pa, 

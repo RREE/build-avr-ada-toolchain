@@ -1,0 +1,12 @@
+--- gcc-4_1-branch/configure
++++ gcc-4_1-branch/configure
+@@ -1092,7 +1092,7 @@
+ 
+ if test "${ENABLE_LIBADA}" != "yes" ; then
+   noconfigdirs="$noconfigdirs target-libada"
+-  noconfigdirs="$noconfigdirs gnattools"
++#  noconfigdirs="$noconfigdirs gnattools"
+ fi
+ 
+ # Check whether --enable-libssp or --disable-libssp was given.
+

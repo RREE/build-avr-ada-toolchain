@@ -1,0 +1,44 @@
+diff -Naurp binutils/size.c binutils/size.c
+--- binutils/size.c	2012-01-18 12:59:34.000000000 +0530
++++ binutils/size.c	2012-01-18 12:58:46.000000000 +0530
+@@ -95,6 +95,7 @@ static int return_code = 0;
+ #define AVR2K 2048UL
+ #define AVR4K 4096UL
+ #define AVR8K 8192UL
++#define AVR9K 9216UL
+ #define AVR14K 14336UL
+ #define AVR16K 16384UL
+ #define AVR20K 20480UL
+@@ -218,6 +219,8 @@ avr_device_t avr[] =
+ 
+ 	{"atmega406",     AVR40K,  AVR2K,  AVR512},
+ 
++	{"atmxt224",      AVR36K,  AVR9K,  0UL},
++	{"atmxt224e",     AVR36K,  AVR9K,  0UL},
+ 	{"atxmega32a4",   AVR36K,  AVR4K,  AVR1K},
+ 	{"atxmega32a4u",  AVR36K,  AVR4K,  AVR1K},
+ 	{"atxmega32c4",   AVR36K,  AVR4K,  AVR1K},
+diff -Naurp gas/config/tc-avr.c gas/config/tc-avr.c
+--- gas/config/tc-avr.c	2012-01-18 12:59:34.000000000 +0530
++++ gas/config/tc-avr.c	2012-01-18 12:58:46.000000000 +0530
+@@ -272,6 +272,8 @@ static struct mcu_type_s mcu_types[] =
+   {"atmega2561", AVR_ISA_AVR6,    bfd_mach_avr6},
+   {"atmega256rfa2", AVR_ISA_AVR6, bfd_mach_avr6},
+   {"atmega256rfr2", AVR_ISA_AVR6, bfd_mach_avr6},
++  {"atmxt224",    AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
++  {"atmxt224e",   AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+   {"atmxt336s",   AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+   {"atxmega16a4", AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+   {"atxmega16a4u",AVR_ISA_XMEGA,  bfd_mach_avrxmega2},
+diff -Naurp gas/doc/c-avr.texi gas/doc/c-avr.texi
+--- gas/doc/c-avr.texi	2012-01-18 12:59:34.000000000 +0530
++++ gas/doc/c-avr.texi	2012-01-18 13:02:14.000000000 +0530
+@@ -89,7 +89,7 @@ atmega2560, atmega2561, atmega256rfa2, a
+ Instruction set avrxmega2 is for the XMEGA AVR core with 8K to 64K program
+ memory space and less than 64K data space (MCU types: atxmega16a4, atxmega16a4u,
+ atxmega16c4, atxmega16d4, atxmega32a4, atxmega32a4u, atxmega32c4, atxmega32d4, 
+-atxmega32x1, atmxt336s).
++atxmega32x1, atmxt224, atmxt224e, atmxt336s).
+ 
+ Instruction set avrxmega3 is for the XMEGA AVR core with 8K to 64K program
+ memory space and greater than 64K data space (MCU types: none).

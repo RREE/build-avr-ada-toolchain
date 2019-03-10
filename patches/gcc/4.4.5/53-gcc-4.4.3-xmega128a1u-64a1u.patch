@@ -1,0 +1,80 @@
+atxmega128a1u
+atxmega64a1u
+===================================================================
+--- gcc/config/avr/avr.c.old	2010-03-28 11:58:03.156250000 -0600
++++ gcc/config/avr/avr.c	2010-03-28 11:38:35.375000000 -0600
+@@ -385,6 +385,7 @@ static const struct mcu_type_s avr_mcu_t
+     /* Xmega, > 64K, <= 128K FLASH, > 64K RAM.  */
+   { "avrxmega5",    ARCH_AVRXMEGA5, NULL },
+   { "atxmega64a1",  ARCH_AVRXMEGA5, "__AVR_ATxmega64A1__" },
++  { "atxmega64a1u", ARCH_AVRXMEGA5, "__AVR_ATxmega64A1U__" },
+     /* Xmega, > 128K, <= 256K FLASH, <= 64K RAM.  */
+   { "avrxmega6",    ARCH_AVRXMEGA6, NULL },
+   { "atxmega128a3", ARCH_AVRXMEGA6, "__AVR_ATxmega128A3__" },
+@@ -397,6 +398,7 @@ static const struct mcu_type_s avr_mcu_t
+     /* Xmega, > 128K, <= 256K FLASH, > 64K RAM.  */
+   { "avrxmega7",    ARCH_AVRXMEGA7, NULL },
+   { "atxmega128a1", ARCH_AVRXMEGA7, "__AVR_ATxmega128A1__" },
++  { "atxmega128a1u",ARCH_AVRXMEGA7, "__AVR_ATxmega128A1U__" },
+     /* Assembler only.  */
+   { "avr1",         ARCH_AVR1, NULL },
+   { "at90s1200",    ARCH_AVR1, "__AVR_AT90S1200__" },
+--- gcc/config/avr/avr.h.old	2010-03-28 12:09:21.921875000 -0600
++++ gcc/config/avr/avr.h	2010-03-28 11:38:43.562500000 -0600
+@@ -978,14 +978,16 @@ mmcu=*:-mmcu=%*}"
+ %{mmcu=atxmega32a4:-m avrxmega3} \
+ %{mmcu=atxmega64a3|\
+   mmcu=atxmega64d3:-m avrxmega4} \
+-%{mmcu=atxmega64a1:-m avrxmega5} \
++%{mmcu=atxmega64a1|\
++  mmcu=atxmega64a1u:-m avrxmega5} \
+ %{mmcu=atxmega128a3|\
+   mmcu=atxmega128d3|\
+   mmcu=atxmega192a3|\
+   mmcu=atxmega192d3|\
+   mmcu=atxmega256a3*|\
+   mmcu=atxmega256d3:-m avrxmega6} \
+-%{mmcu=atxmega128a1:-m avrxmega7} \
++%{mmcu=atxmega128a1|\
++  mmcu=atxmega128a1u:-m avrxmega7} \
+ %{mmcu=atmega324*|\
+   mmcu=atmega325*|\
+   mmcu=atmega328|\
+@@ -1225,6 +1227,7 @@ mmcu=*:-mmcu=%*}"
+ %{mmcu=atxmega4|mmcu=atxmega64a3:crtx64a3.o%s} \
+ %{mmcu=atxmega64d3:crtx64d3.o%s} \
+ %{mmcu=atxmega5|mmcu=atxmega64a1:crtx64a1.o%s} \
++%{mmcu=atxmega64a1u:crtx64a1u.o%s} \
+ %{mmcu=atxmega6|mmcu=atxmega128a3:crtx128a3.o%s} \
+ %{mmcu=atxmega128d3:crtx128d3.o%s}\
+ %{mmcu=atxmega192a3:crtx192a3.o%s}\
+@@ -1232,7 +1235,8 @@ mmcu=*:-mmcu=%*}"
+ %{mmcu=atxmega256a3:crtx256a3.o%s} \
+ %{mmcu=atxmega256a3b:crtx256a3b.o%s} \
+ %{mmcu=atxmega256d3:crtx256d3.o%s} \
+-%{mmcu=atxmega7|mmcu=atxmega128a1:crtx128a1.o%s}"
++%{mmcu=atxmega7|mmcu=atxmega128a1:crtx128a1.o%s} \
++%{mmcu=atxmega128a1u:crtx128a1u.o%s}"
+ 
+ #define EXTRA_SPECS {"crt_binutils", CRT_BINUTILS_SPECS},
+ 
+--- gcc/config/avr/t-avr.old	2010-03-28 12:09:26.234375000 -0600
++++ gcc/config/avr/t-avr	2010-03-28 11:38:50.203125000 -0600
+@@ -235,6 +235,7 @@ MULTILIB_MATCHES = \
+ 	mmcu?avrxmega4=mmcu?atxmega64a3 \
+ 	mmcu?avrxmega4=mmcu?atxmega64d3 \
+ 	mmcu?avrxmega5=mmcu?atxmega64a1 \
++	mmcu?avrxmega5=mmcu?atxmega64a1u \
+ 	mmcu?avrxmega6=mmcu?atxmega128a3 \
+ 	mmcu?avrxmega6=mmcu?atxmega128d3 \
+ 	mmcu?avrxmega6=mmcu?atxmega192a3 \
+@@ -242,7 +243,8 @@ MULTILIB_MATCHES = \
+ 	mmcu?avrxmega6=mmcu?atxmega256a3 \
+ 	mmcu?avrxmega6=mmcu?atxmega256a3b \
+ 	mmcu?avrxmega6=mmcu?atxmega256d3 \
+-	mmcu?avrxmega7=mmcu?atxmega128a1
++	mmcu?avrxmega7=mmcu?atxmega128a1 \
++	mmcu?avrxmega7=mmcu?atxmega128a1u
+ 
+ MULTILIB_EXCEPTIONS =
+ 

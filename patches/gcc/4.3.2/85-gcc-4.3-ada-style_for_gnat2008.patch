@@ -1,0 +1,382 @@
+--- gcc/ada/ali.adb~	Thu Dec 13 10:20:52 2007
++++ gcc/ada/ali.adb	Fri Jan 30 20:02:27 2009
+@@ -1822,7 +1822,7 @@
+                   end if;
+                end loop;
+ 
+-               Add_Char_To_Name_Buffer (nul);
++               Add_Char_To_Name_Buffer (NUL);
+                Skip_Eol;
+             end if;
+ 
+--- gcc/ada/atree.adb~	Wed Dec 19 16:22:40 2007
++++ gcc/ada/atree.adb	Fri Jan 30 20:38:42 2009
+@@ -2448,7 +2448,7 @@
+ 
+       --  Fix parents of substituted node, since it has changed identity
+ 
+-      Fix_Parents (New_Node, Old_Node);
++      Fix_Parents (Old_Node => New_Node, New_Node => Old_Node);
+ 
+       --  Since we are doing a replace, we assume that the original node
+       --  is intended to become the new replaced node. The call would be
+@@ -2511,7 +2511,7 @@
+          Set_Must_Not_Freeze (Old_Node, Old_Must_Not_Freeze);
+       end if;
+ 
+-      Fix_Parents (New_Node, Old_Node);
++      Fix_Parents (Old_Node => New_Node, New_Node => Old_Node);
+    end Rewrite;
+ 
+    ------------------
+@@ -7336,7 +7336,7 @@
+          pragma Assert (N <= Nodes.Last);
+ 
+          if Val > Error then
+-            Set_Parent (Val, N);
++            Set_Parent (N => Val, Val => N);
+          end if;
+ 
+          Set_Node1 (N, Val);
+@@ -7347,7 +7347,7 @@
+          pragma Assert (N <= Nodes.Last);
+ 
+          if Val > Error then
+-            Set_Parent (Val, N);
++            Set_Parent (N => Val, Val => N);
+          end if;
+ 
+          Set_Node2 (N, Val);
+@@ -7358,7 +7358,7 @@
+          pragma Assert (N <= Nodes.Last);
+ 
+          if Val > Error then
+-            Set_Parent (Val, N);
++            Set_Parent (N => Val, Val => N);
+          end if;
+ 
+          Set_Node3 (N, Val);
+@@ -7369,7 +7369,7 @@
+          pragma Assert (N <= Nodes.Last);
+ 
+          if Val > Error then
+-            Set_Parent (Val, N);
++            Set_Parent (N => Val, Val => N);
+          end if;
+ 
+          Set_Node4 (N, Val);
+@@ -7380,7 +7380,7 @@
+          pragma Assert (N <= Nodes.Last);
+ 
+          if Val > Error then
+-            Set_Parent (Val, N);
++            Set_Parent (N => Val, Val => N);
+          end if;
+ 
+          Set_Node5 (N, Val);
+--- gcc/ada/einfo.adb~	Wed Dec 19 16:22:02 2007
++++ gcc/ada/einfo.adb	Fri Jan 30 20:44:34 2009
+@@ -5378,14 +5378,14 @@
+    procedure Append_Entity (Id : Entity_Id; V : Entity_Id) is
+    begin
+       if Last_Entity (V) = Empty then
+-         Set_First_Entity (V, Id);
++         Set_First_Entity (Id => V, V => Id);
+       else
+          Set_Next_Entity (Last_Entity (V), Id);
+       end if;
+ 
+       Set_Next_Entity (Id, Empty);
+       Set_Scope (Id, V);
+-      Set_Last_Entity (V, Id);
++      Set_Last_Entity (Id => V, V => Id);
+    end Append_Entity;
+ 
+    --------------------
+@@ -5637,7 +5637,6 @@
+          end if;
+       end loop;
+ 
+-      return S;
+    end Enclosing_Dynamic_Scope;
+ 
+    ----------------------
+@@ -6859,7 +6858,6 @@
+          end loop;
+       end if;
+ 
+-      raise Program_Error;
+    end Root_Type;
+ 
+    -----------------
+--- gcc/ada/errout.adb~	Wed Dec 19 16:22:40 2007
++++ gcc/ada/errout.adb	Fri Jan 30 20:05:48 2009
+@@ -2078,7 +2078,7 @@
+       for J in Name_Buffer'Range loop
+          Name_Buffer (J) := Ident (J);
+ 
+-         if Name_Buffer (J) = ASCII.Nul then
++         if Name_Buffer (J) = ASCII.NUL then
+             Name_Len := J - 1;
+             exit;
+          end if;
+--- gcc/ada/exp_ch6.adb~	Thu Dec 13 10:22:06 2007
++++ gcc/ada/exp_ch6.adb	Fri Jan 30 20:07:28 2009
+@@ -1016,7 +1016,7 @@
+                            Low_Bound  =>
+                              Make_Attribute_Reference (Loc,
+                                Prefix => New_Occurrence_Of (Var, Loc),
+-                               Attribute_name => Name_First),
++                               Attribute_Name => Name_First),
+                            High_Bound =>
+                              Make_Attribute_Reference (Loc,
+                                Prefix => New_Occurrence_Of (Var, Loc),
+--- gcc/ada/exp_dbug.adb~	Wed Sep 26 10:43:08 2007
++++ gcc/ada/exp_dbug.adb	Fri Jan 30 20:08:27 2009
+@@ -535,7 +535,7 @@
+       --  For all these cases, just return the name unchanged
+ 
+       then
+-         Name_Buffer (Name_Len + 1) := ASCII.Nul;
++         Name_Buffer (Name_Len + 1) := ASCII.NUL;
+          return;
+       end if;
+ 
+@@ -751,7 +751,7 @@
+          Get_Qualified_Name_And_Append (E);
+       end if;
+ 
+-      Name_Buffer (Name_Len + 1) := ASCII.Nul;
++      Name_Buffer (Name_Len + 1) := ASCII.NUL;
+    end Get_External_Name;
+ 
+    -----------------------------------
+@@ -784,7 +784,7 @@
+       if Has_Suffix then
+          Add_Str_To_Name_Buffer ("___");
+          Add_Str_To_Name_Buffer (Suffix);
+-         Name_Buffer (Name_Len + 1) := ASCII.Nul;
++         Name_Buffer (Name_Len + 1) := ASCII.NUL;
+       end if;
+    end Get_External_Name_With_Suffix;
+ 
+--- gcc/ada/exp_dist.adb~	Mon Oct 15 13:55:07 2007
++++ gcc/ada/exp_dist.adb	Fri Jan 30 20:10:28 2009
+@@ -8795,7 +8795,7 @@
+                                  Build_From_Any_Call (Etype (Field),
+                                    Build_Get_Aggregate_Element (Loc,
+                                      Any => Any,
+-                                     Tc  => Build_TypeCode_Call (Loc,
++                                     TC  => Build_TypeCode_Call (Loc,
+                                               Etype (Field), Decls),
+                                      Idx => Make_Integer_Literal (Loc,
+                                               Counter)),
+@@ -8835,7 +8835,7 @@
+                                       Parameter_Associations => New_List (
+                                         Build_Get_Aggregate_Element (Loc,
+                                           Any => Any,
+-                                          Tc  => Make_Function_Call (Loc,
++                                          TC  => Make_Function_Call (Loc,
+                                             Name => New_Occurrence_Of (
+                                               RTE (RE_Any_Member_Type), Loc),
+                                             Parameter_Associations =>
+@@ -8924,7 +8924,7 @@
+                                     Build_From_Any_Call (Disc_Type,
+                                       Build_Get_Aggregate_Element (Loc,
+                                         Any => Any_Parameter,
+-                                        Tc  => Build_TypeCode_Call
++                                        TC  => Build_TypeCode_Call
+                                                  (Loc, Disc_Type, Decls),
+                                         Idx => Make_Integer_Literal
+                                                  (Loc, Component_Counter)),
+@@ -9039,7 +9039,7 @@
+                         Element_Any :=
+                           Build_Get_Aggregate_Element (Loc,
+                             Any => Any,
+-                            Tc  => Element_TC,
++                            TC  => Element_TC,
+                             Idx => New_Occurrence_Of (Counter, Loc));
+                      end;
+ 
+@@ -9132,7 +9132,7 @@
+                                    Indt,
+                                    Build_Get_Aggregate_Element (Loc,
+                                      Any => Any_Parameter,
+-                                     Tc  => Build_TypeCode_Call (Loc,
++                                     TC  => Build_TypeCode_Call (Loc,
+                                               Indt, Decls),
+                                      Idx => Make_Integer_Literal (Loc, J - 1)),
+                                    Decls)));
+--- gcc/ada/freeze.adb~	Wed Dec 19 16:23:55 2007
++++ gcc/ada/freeze.adb	Fri Jan 30 20:11:27 2009
+@@ -1105,7 +1105,7 @@
+          New_N :=
+            Make_Object_Declaration (Loc,
+              Defining_Identifier => Temp,
+-             Object_definition => New_Occurrence_Of (Typ, Loc),
++             Object_Definition => New_Occurrence_Of (Typ, Loc),
+              Expression => Relocate_Node (E));
+          Insert_Before (Parent (E), New_N);
+          Analyze (New_N);
+--- gcc/ada/gnatchop.adb~	Thu Dec 13 10:23:29 2007
++++ gcc/ada/gnatchop.adb	Fri Jan 30 20:50:03 2009
+@@ -425,7 +425,7 @@
+       Info    : Unit_Info renames Unit.Table (U);
+       FD      : File_Descriptor;
+       Name    : aliased constant String :=
+-                  File.Table (Input).Name.all & ASCII.Nul;
++                  File.Table (Input).Name.all & ASCII.NUL;
+       Length  : File_Offset;
+       Buffer  : String_Access;
+       Result  : String_Access;
+@@ -1413,7 +1413,7 @@
+ 
+    function Write_Chopped_Files (Input : File_Num) return Boolean is
+       Name    : aliased constant String :=
+-                  File.Table (Input).Name.all & ASCII.Nul;
++                  File.Table (Input).Name.all & ASCII.NUL;
+       FD      : File_Descriptor;
+       Buffer  : String_Access;
+       Success : Boolean;
+@@ -1660,7 +1660,7 @@
+ 
+       declare
+          E_Name      : constant String := OS_Name (1 .. O_Length);
+-         C_Name      : aliased constant String := E_Name & ASCII.Nul;
++         C_Name      : aliased constant String := E_Name & ASCII.NUL;
+          OS_Encoding : constant String := Encoding (1 .. E_Length);
+          File        : Stream_IO.File_Type;
+       begin
+--- gcc/ada/gnatlink.adb~	Thu Dec 13 10:23:29 2007
++++ gcc/ada/gnatlink.adb	Fri Jan 30 20:48:43 2009
+@@ -139,7 +139,7 @@
+ 
+    Gcc : String_Access := Program_Name ("gcc");
+ 
+-   Read_Mode  : constant String := "r" & ASCII.Nul;
++   Read_Mode  : constant String := "r" & ASCII.NUL;
+ 
+    Begin_Info : String := "--  BEGIN Object file/option list";
+    End_Info   : String := "--  END Object file/option list   ";
+--- gcc/ada/lib-xref.adb~	Thu Dec 13 10:19:43 2007
++++ gcc/ada/lib-xref.adb	Fri Jan 30 20:14:44 2009
+@@ -307,7 +307,7 @@
+ 
+          --  Parent (N) is assignment statement, check whether N is its name
+ 
+-         return Name (Parent (N)) = N;
++         --  return Name (Parent (N)) = N;
+       end Is_On_LHS;
+ 
+    --  Start of processing for Generate_Reference
+--- gcc/ada/mlib-prj.adb~	Mon Oct 15 13:53:48 2007
++++ gcc/ada/mlib-prj.adb	Fri Jan 30 20:24:05 2009
+@@ -2348,7 +2348,7 @@
+       Fd : FILEs;
+       --  Binder file's descriptor
+ 
+-      Read_Mode : constant String := "r" & ASCII.Nul;
++      Read_Mode : constant String := "r" & ASCII.NUL;
+       --  For fopen
+ 
+       Status : Interfaces.C_Streams.int;
+--- gcc/ada/mlib-utl.adb~	Mon Sep 10 12:47:10 2007
++++ gcc/ada/mlib-utl.adb	Fri Jan 30 20:24:53 2009
+@@ -299,7 +299,7 @@
+    -----------------
+ 
+    procedure Delete_File (Filename : String) is
+-      File    : constant String := Filename & ASCII.Nul;
++      File    : constant String := Filename & ASCII.NUL;
+       Success : Boolean;
+ 
+    begin
+--- gcc/ada/s-os_lib.adb~	Thu Dec 13 10:43:51 2007
++++ gcc/ada/s-os_lib.adb	Fri Jan 30 20:12:37 2009
+@@ -458,10 +458,10 @@
+          --  Copy attributes
+ 
+          C_From (1 .. Name'Length) := Name;
+-         C_From (C_From'Last) := ASCII.Nul;
++         C_From (C_From'Last) := ASCII.NUL;
+ 
+          C_To (1 .. To_Name'Length) := To_Name;
+-         C_To (C_To'Last) := ASCII.Nul;
++         C_To (C_To'Last) := ASCII.NUL;
+ 
+          case Preserve is
+ 
+@@ -1622,10 +1622,10 @@
+ 
+                --  If null terminated string, put the quote before
+ 
+-               if Res (J) = ASCII.Nul then
++               if Res (J) = ASCII.NUL then
+                   Res (J) := '"';
+                   J := J + 1;
+-                  Res (J) := ASCII.Nul;
++                  Res (J) := ASCII.NUL;
+ 
+                --  If argument is terminated by '\', then double it. Otherwise
+                --  the ending quote will be taken as-is. This is quite strange
+--- gcc/ada/sem_ch3.adb~	Wed Dec 19 16:24:34 2007
++++ gcc/ada/sem_ch3.adb	Fri Jan 30 20:16:43 2009
+@@ -13879,7 +13879,6 @@
+                Ancestor := Etype (Ancestor);
+             end loop;
+ 
+-            return True;
+          end;
+       end if;
+    end Is_Visible_Component;
+--- gcc/ada/sem_elab.adb~	Mon Sep 10 12:47:10 2007
++++ gcc/ada/sem_elab.adb	Fri Jan 30 20:18:14 2009
+@@ -3091,8 +3091,6 @@
+             Scop := Scope (Scop);
+          end if;
+       end loop;
+-
+-      raise Program_Error;
+    end Within;
+ 
+    --------------------------
+--- gcc/ada/sem_util.adb~	Wed Dec 19 16:22:02 2007
++++ gcc/ada/sem_util.adb	Fri Jan 30 20:19:52 2009
+@@ -3290,7 +3290,7 @@
+ 
+    begin
+       Res := Internal_Full_Qualified_Name (E);
+-      Store_String_Char (Get_Char_Code (ASCII.nul));
++      Store_String_Char (Get_Char_Code (ASCII.NUL));
+       return End_String;
+    end Full_Qualified_Name;
+ 
+@@ -5734,8 +5734,6 @@
+             T := Base_Type (Etyp);
+          end loop;
+       end if;
+-
+-      raise Program_Error;
+    end Is_Descendent_Of;
+ 
+    --------------
+--- gcc/ada/uintp.adb~	Mon Oct 15 13:53:48 2007
++++ gcc/ada/uintp.adb	Fri Jan 30 20:28:46 2009
+@@ -1942,7 +1942,7 @@
+ 
+    function UI_Gt (Left : Uint; Right : Uint) return Boolean is
+    begin
+-      return UI_Lt (Right, Left);
++      return UI_Lt (Left => Right, Right => Left);
+    end UI_Gt;
+ 
+    ---------------
+@@ -1988,7 +1988,7 @@
+ 
+    function UI_Le (Left : Uint; Right : Uint) return Boolean is
+    begin
+-      return not UI_Lt (Right, Left);
++      return not UI_Lt (Left => Right, Right => Left);
+    end UI_Le;
+ 
+    ------------
