@@ -1,0 +1,1 @@
+This file is installed in the subdirectory adainclude of the compiler's default installation directory.  Here is also the file system.ads that is needed for avr-gnatlink to read the target parameters in targparm.adb:175.  Gnatlink does not honor any --RTS= parameter for locating system.ads.
