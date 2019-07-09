@@ -81,7 +81,7 @@ source bin/config.inc
 
 
 #AVRADA_PATCHES=$AVR_BUILD/avr-ada-$VER_AVRADA/patches
-AVRADA_PATCHES=/home/re/Devel/AVR-Ada.git/avr-ada/patches
+AVRADA_PATCHES=$BASE_DIR/patches
 AVRADA_GCC_DIR="$AVRADA_PATCHES/gcc/$VER_GCC"
 AVRADA_BIN_DIR="$AVRADA_PATCHES/binutils/$VER_BINUTILS"
 AVRADA_LIBC_DIR="$AVRADA_PATCHES/avr-libc/$VER_LIBC"
@@ -375,6 +375,9 @@ if test "x$build_libc" = "xyes" ; then
 
     apply_patches LIBC &> $AVR_BUILD/step30_libc_patch.log
        
+    display "bootstrapping AVR-LIBC ... (log in $AVR_BUILD/step31_libc_conf.log)"
+    ./bootstrap
+    
     display "configure AVR-LIBC ... (log in $AVR_BUILD/step31_libc_conf.log)"
     CC=avr-gcc ./configure --build=`./config.guess` --host=avr --prefix=$PREFIX &>$AVR_BUILD/step31_libc_conf.log
     check_return_code
