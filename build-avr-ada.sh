@@ -81,7 +81,7 @@ source bin/config.inc
 
 
 #AVRADA_PATCHES=$AVR_BUILD/avr-ada-$VER_AVRADA/patches
-AVRADA_PATCHES=$BASE_DIR/patches
+AVRADA_PATCHES="$BASE_DIR/patches"
 AVRADA_GCC_DIR="$AVRADA_PATCHES/gcc/$VER_GCC"
 AVRADA_BIN_DIR="$AVRADA_PATCHES/binutils/$VER_BINUTILS"
 AVRADA_LIBC_DIR="$AVRADA_PATCHES/avr-libc/$VER_LIBC"
@@ -92,13 +92,14 @@ download_files="yes"
 delete_obj_dirs="no"
 delete_build_dir="yes"
 delete_install_dir="no"
-build_binutils="no"
+build_binutils="yes"
 build_gcc="yes"
 build_mpfr="no"
 build_mpc="no"
 build_gmp="no"
 build_libc="yes"
-build_avrada="no"
+build_avradarts="yes"
+build_avrada="yes"
 build_avrdude="yes"
 
 # The following are advanced options not required for a normal build
@@ -274,7 +275,7 @@ if test "x$build_binutils" = "xyes" ; then
     check_return_code
 
     display "Install binutils ...   (log in $AVR_BUILD/step18_bin_install.log)"
-    make install &>$AVR_BUILD/step18_bin_install.log
+    sudo make install &>$AVR_BUILD/step18_bin_install.log
     check_return_code
 fi
 
@@ -356,7 +357,7 @@ if test "$build_gcc" = "yes" ; then
     display "Install GCC ...       (log in $AVR_BUILD/step28_gcc_install.log)"
 
     cd $AVR_BUILD/gcc-obj
-    make install &>$AVR_BUILD/step28_gcc_install.log
+    sudo --preserve-env=PATH make install &>$AVR_BUILD/step28_gcc_install.log
     check_return_code
 fi
 
@@ -374,7 +375,7 @@ if test "x$build_libc" = "xyes" ; then
     cd $AVR_BUILD/$FILE_LIBC
 
     apply_patches LIBC &> $AVR_BUILD/step30_libc_patch.log
-       
+
     display "bootstrapping AVR-LIBC ... (log in $AVR_BUILD/step31_libc_conf.log)"
     ./bootstrap
     
@@ -387,7 +388,7 @@ if test "x$build_libc" = "xyes" ; then
     check_return_code
 
     display "Install AVR-LIBC ...    (log in $AVR_BUILD/step38_libc_install.log)"
-    make install &>$AVR_BUILD/step38_libc_install.log
+    sudo --preserve-env=PATH make install &>$AVR_BUILD/step38_libc_install.log
     check_return_code
 fi
 print_time >> $AVR_BUILD/time_run.log
@@ -415,7 +416,7 @@ if test "x$build_avrdude" = "xyes" ; then
     check_return_code
 
     display "Install avrdude ...    (log in $AVR_BUILD/step48_avrdude_install.log)"
-    make install &>$AVR_BUILD/step48_avrdude_install.log
+    sudo --preserve-env=PATH make install &>$AVR_BUILD/step48_avrdude_install.log
     check_return_code
 fi
 print_time >> $AVR_BUILD/time_run.log
@@ -428,7 +429,7 @@ if test "x$build_avradarts" = "xyes" ; then
 
     cd $AVR_BUILD
 
-    package_unpack AVRADA
+    unpack_package AVRADA
     # display "Extracting $DOWNLOAD/$FILE_AVRADA.tar.bz2 ..."
     # bunzip2 -c $DOWNLOAD/$FILE_AVRADA.tar.bz2 | tar xf -
 
@@ -443,7 +444,7 @@ if test "x$build_avradarts" = "xyes" ; then
     check_return_code
     
     display "build AVR-Ada RTS ... (log in $AVR_BUILD/step68_avrada_rts_install.log)"
-    make install_rts >& ../step68_avrada_rts_install.log
+    sudo --preserve-env=PATH make install_rts >& ../step68_avrada_rts_install.log
     check_return_code
 fi
 
@@ -456,7 +457,7 @@ if test "x$build_avrada" = "xyes" ; then
     display "build AVR-Ada libs ... (log in $AVR_BUILD/step14_avrada_libs.log)"
     make build_libs >& ../step14_avrada_libs.log
     check_return_code
-    make install_libs >& ../step14_avrada_libs_inst.log
+    sudo --preserve-env=PATH make install_libs >& ../step14_avrada_libs_inst.log
     check_return_code
 fi
 
