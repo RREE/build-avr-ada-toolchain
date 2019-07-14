@@ -88,19 +88,40 @@ AVRADA_LIBC_DIR="$AVRADA_PATCHES/avr-libc/$VER_LIBC"
 
 
 # actions:
-download_files="yes"
-delete_obj_dirs="no"
-delete_build_dir="yes"
-delete_install_dir="no"
-build_binutils="yes"
-build_gcc="yes"
-build_mpfr="no"
-build_mpc="no"
-build_gmp="no"
-build_libc="yes"
-build_avradarts="yes"
-build_avrada="yes"
-build_avrdude="yes"
+build_all=yes
+
+if test "x$build_all" = "xyes" ; then
+    echo Building all.
+    download_files="yes"
+    delete_obj_dirs="no"
+    delete_build_dir="yes"
+    delete_install_dir="no"
+    build_binutils="yes"
+    build_gcc="yes"
+    build_mpfr="no"
+    build_mpc="no"
+    build_gmp="no"
+    build_libc="yes"
+    build_avradarts="no"
+    build_avrada="no"
+    build_avrdude="yes"
+else
+    echo Using custom build.
+    download_files="yes"
+    delete_obj_dirs="no"
+    delete_build_dir="yes"
+    delete_install_dir="no"
+    build_binutils="yes"
+    build_gcc="yes"
+    build_mpfr="no"
+    build_mpc="no"
+    build_gmp="no"
+    build_libc="yes"
+    build_avradarts="no"
+    build_avrada="no"
+    build_avrdude="yes"
+fi
+
 
 # The following are advanced options not required for a normal build
 # either delete the build directory completely

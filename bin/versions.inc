@@ -48,3 +48,7 @@ LIBC_MIRROR="http://download.savannah.gnu.org/releases/avr-libc"
 AVRDUDE_TAR="avrdude-$VER_AVRDUDE.tar.gz"
 AVRDUDE_X=z
 AVRDUDE_MIRROR="http://download.savannah.gnu.org/releases/avrdude"
+
+AVRADA_TAR="avrada-$VER_AVRADA.tar.bz2"
+AVRADA_X=j
+AVRADA_MIRROR="https://sourceforge.net/projects/avr-ada/files/avr-ada/Source%20Dist/avr-ada-1.2.2.tar.bz2/download"
