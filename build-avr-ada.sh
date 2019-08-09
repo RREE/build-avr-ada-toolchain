@@ -94,7 +94,7 @@ if test "x$build_all" = "xyes" ; then
     echo Building all.
     download_files="yes"
     delete_obj_dirs="no"
-    delete_build_dir="yes"
+    delete_build_dir="no"
     delete_install_dir="no"
     build_binutils="yes"
     build_gcc="yes"
@@ -102,24 +102,24 @@ if test "x$build_all" = "xyes" ; then
     build_mpc="no"
     build_gmp="no"
     build_libc="yes"
-    build_avradarts="no"
-    build_avrada="no"
+    build_avradarts="yes"
+    build_avrada="yes"
     build_avrdude="yes"
 else
     echo Using custom build.
-    download_files="yes"
+    download_files="no"
     delete_obj_dirs="no"
-    delete_build_dir="yes"
+    delete_build_dir="no"
     delete_install_dir="no"
-    build_binutils="yes"
-    build_gcc="yes"
+    build_binutils="no"
+    build_gcc="no"
     build_mpfr="no"
     build_mpc="no"
     build_gmp="no"
-    build_libc="yes"
-    build_avradarts="no"
-    build_avrada="no"
-    build_avrdude="yes"
+    build_libc="no"
+    build_avradarts="yes"
+    build_avrada="yes"
+    build_avrdude="no"
 fi
 
 
@@ -380,6 +380,10 @@ if test "$build_gcc" = "yes" ; then
     cd $AVR_BUILD/gcc-obj
     sudo --preserve-env=PATH make install &>$AVR_BUILD/step28_gcc_install.log
     check_return_code
+
+    display "Adding GCC symlinks..."
+    sudo ln -sf $PREFIX/bin/avr-gcc $PREFIX/bin/avr-gnatgcc
+    sudo ln -sf $PREFIX/bin/avr-ar $PREFIX/bin/avr-elf-ar
 fi
 
 #---------------------------------------------------------------------------
