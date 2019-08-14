@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# download the source necessary source files
+# download the necessary source files
 #
 
 source bin/config.inc
