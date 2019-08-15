@@ -43,8 +43,6 @@
 # $AVR_BUILD : the temporary directory used to build AVR-Ada
 # $PREFIX    : the root of the installation directory
 # $FILE_...  : filenames of the source distributions without extension
-# $BIN_PATCHES : blank separated list of binutils patch files
-# $GCC_PATCHES : blank separated list of patch files for gcc
 #
 #---------------------------------------------------------------------------
 
@@ -52,15 +50,15 @@ BASE_DIR=$PWD
 OS=`uname -s`
 case "$OS" in
     "Linux" )
-        PREFIX="/opt/avr_83_gnat"
+        PREFIX="/opt/avr_92_gnat"
         WITHGMP="/usr"
         WITHMPFR="/usr";;
     "Darwin" )
-        PREFIX="/opt/avr_83_gnat"
+        PREFIX="/opt/avr_92_gnat"
         WITHGMP="/opt/local"
         WITHMPFR="/opt/local";;
     * )
-        PREFIX="/mingw/avr_83_gnat"
+        PREFIX="/mingw/avr_92_gnat"
         WITHGMP="/mingw"
         WITHMPFR="/mingw";;
 esac
@@ -79,49 +77,20 @@ export PATH="${PREFIX}/bin:${PATH}"
 source bin/versions.inc
 source bin/config.inc
 
-
-#AVRADA_PATCHES=$AVR_BUILD/avr-ada-$VER_AVRADA/patches
-AVRADA_PATCHES="$BASE_DIR/patches"
-AVRADA_GCC_DIR="$AVRADA_PATCHES/gcc/$VER_GCC"
-AVRADA_BIN_DIR="$AVRADA_PATCHES/binutils/$VER_BINUTILS"
-AVRADA_LIBC_DIR="$AVRADA_PATCHES/avr-libc/$VER_LIBC"
-
-
 # actions:
-build_all=yes
-
-if test "x$build_all" = "xyes" ; then
-    echo Building all.
-    download_files="yes"
-    delete_obj_dirs="no"
-    delete_build_dir="no"
-    delete_install_dir="no"
-    build_binutils="yes"
-    build_gcc="yes"
-    build_mpfr="no"
-    build_mpc="no"
-    build_gmp="no"
-    build_libc="yes"
-    build_avradarts="yes"
-    build_avrada="yes"
-    build_avrdude="yes"
-else
-    echo Using custom build.
-    download_files="no"
-    delete_obj_dirs="no"
-    delete_build_dir="no"
-    delete_install_dir="no"
-    build_binutils="no"
-    build_gcc="no"
-    build_mpfr="no"
-    build_mpc="no"
-    build_gmp="no"
-    build_libc="no"
-    build_avradarts="yes"
-    build_avrada="yes"
-    build_avrdude="no"
-fi
-
+download_files="yes"
+delete_obj_dirs="no"
+delete_build_dir="yes"
+delete_install_dir="no"
+build_binutils="no"
+build_gcc="no"
+build_mpfr="no"
+build_mpc="no"
+build_gmp="no"
+build_libc="no"
+build_avradarts="yes"
+build_avrdude="no"
+build_avrada="no"
 
 # The following are advanced options not required for a normal build
 # either delete the build directory completely
@@ -214,26 +183,6 @@ if test "x$download_files" = "xyes" ; then
     bin/download.sh
 fi
 print_time > $AVR_BUILD/time_run.log
-
-#---------------------------------------------------------------------------
-
-#
-# unpack AVR-Ada first to get access to the patches
-#
-
-# cd $AVR_BUILD
-
-# unpack_package AVRADA
-# display "Extracting $DOWNLOAD/$FILE_AVRADA.tar.bz2 ..."
-# bunzip2 -c $DOWNLOAD/$FILE_AVRADA.tar.bz2 | tar xf -
-
-#
-# set the list of patches after downloading
-#
-BIN_PATCHES=`(cd $AVRADA_BIN_DIR; ls -1 [0-9][0-9][0-9]-*binutils-*.patch)`
-GCC_PATCHES=`(cd $AVRADA_GCC_DIR; ls -1 [0-9][0-9]-*gcc-*.patch)`
-LIBC_PATCHES=`(cd $AVRADA_LIBC_DIR; ls -1 [0-9][0-9][0-9]-*libc-*.patch)`
-
 
 #---------------------------------------------------------------------------
 
@@ -452,24 +401,19 @@ if test "x$build_avradarts" = "xyes" ; then
     #########################################################################
     header "Building AVR-Ada RTS"
 
-    cd $AVR_BUILD
-
-    unpack_package AVRADA
-    # display "Extracting $DOWNLOAD/$FILE_AVRADA.tar.bz2 ..."
-    # bunzip2 -c $DOWNLOAD/$FILE_AVRADA.tar.bz2 | tar xf -
-
-    cd $AVR_BUILD/$FILE_AVRADA
-
-    display "configure AVR-Ada ... (log in $AVR_BUILD/step61_avrada_conf.log)"
-    ./configure >& ../step61_avrada_conf.log
-    check_return_code
-
+    AVRGCC_VERSION=`avr-gcc -dumpversion`
+    AVRGCC_MAJOR=`echo $AVRGCC_VERSION | awk -F. ' { print $1; } '`
+    FILE_AVRADARTS=avr-ada-rts-gcc-$AVRGCC_MAJOR
+    # mkdir -p $AVR_BUILD/$FILE_AVRADARTS
+    cp -a $AVRADA_RTS/gcc-$AVRGCC_MAJOR $AVR_BUILD/$FILE_AVRADARTS
+    cd $AVR_BUILD/$FILE_AVRADARTS
+    
     display "build AVR-Ada RTS ... (log in $AVR_BUILD/step62_avrada_rts_make.log)"
-    make build_rts >& ../step62_avrada_rts_make.log
+    make -d build_rts >& ../step62_avrada_rts_make.log
     check_return_code
     
-    display "build AVR-Ada RTS ... (log in $AVR_BUILD/step68_avrada_rts_install.log)"
-    sudo --preserve-env=PATH make install_rts >& ../step68_avrada_rts_install.log
+    display "install AVR-Ada RTS ... (log in $AVR_BUILD/step68_avrada_rts_install.log)"
+    make install_rts >& ../step68_avrada_rts_install.log
     check_return_code
 fi
 

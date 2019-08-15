@@ -1,10 +1,10 @@
-# -*- mode: shell-script-mode -*-
+# -*- mode: shell-script -*-
 #
 # versions of the different source packages
 #
 
 VER_BINUTILS=2.32
-VER_GCC=8.3.0
+VER_GCC=9.2.0
 VER_MPFR=4.0.2
 VER_MPC=1.1.0
 VER_GMP=6.1.2
