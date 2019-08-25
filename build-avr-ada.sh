@@ -81,16 +81,16 @@ source bin/config.inc
 download_files="yes"
 delete_obj_dirs="no"
 delete_build_dir="yes"
-delete_install_dir="no"
-build_binutils="no"
-build_gcc="no"
+delete_install_dir="yes"
+build_binutils="yes"
+build_gcc="yes"
 build_mpfr="no"
 build_mpc="no"
 build_gmp="no"
-build_libc="no"
+build_libc="yes"
 build_avradarts="yes"
-build_avrdude="no"
-build_avrada="no"
+build_avrdude="yes"
+build_avrada="yes"
 
 # The following are advanced options not required for a normal build
 # either delete the build directory completely
@@ -134,7 +134,7 @@ GCC_VERSION=`$CC -dumpversion`
 
 if [[ "$GCC_VERSION" < "4.7.0" ]] ; then  # string comparison (?)
     echo "($GCC_VERSION) is too old"
-    echo "AVR-Ada V2 requires gcc-8 as build compiler"
+    echo "AVR-Ada V2 requires at least gcc-8 as build compiler"
     exit 2
 else
     echo "Found native compiler gcc-"$GCC_VERSION
@@ -330,9 +330,9 @@ if test "$build_gcc" = "yes" ; then
     sudo --preserve-env=PATH make install &>$AVR_BUILD/step28_gcc_install.log
     check_return_code
 
-    display "Adding GCC symlinks..."
-    sudo ln -sf $PREFIX/bin/avr-gcc $PREFIX/bin/avr-gnatgcc
-    sudo ln -sf $PREFIX/bin/avr-ar $PREFIX/bin/avr-elf-ar
+    display "Adding GCC links..."
+    sudo ln -f $PREFIX/bin/avr-gcc $PREFIX/bin/avr-gnatgcc
+    sudo ln -f $PREFIX/bin/avr-ar $PREFIX/bin/avr-elf-ar
 fi
 
 #---------------------------------------------------------------------------
@@ -350,8 +350,8 @@ if test "x$build_libc" = "xyes" ; then
 
     apply_patches LIBC &> $AVR_BUILD/step30_libc_patch.log
 
-    display "bootstrapping AVR-LIBC ... (log in $AVR_BUILD/step31_libc_conf.log)"
-    ./bootstrap
+    display "bootstrapping AVR-LIBC ... (log in $AVR_BUILD/step30_libc_bootstrap.log)"
+    ./bootstrap &>$AVR_BUILD/step30_libc_bootstrap.log
     
     display "configure AVR-LIBC ... (log in $AVR_BUILD/step31_libc_conf.log)"
     CC=avr-gcc ./configure --build=`./config.guess` --host=avr --prefix=$PREFIX &>$AVR_BUILD/step31_libc_conf.log
@@ -413,7 +413,7 @@ if test "x$build_avradarts" = "xyes" ; then
     check_return_code
     
     display "install AVR-Ada RTS ... (log in $AVR_BUILD/step68_avrada_rts_install.log)"
-    make install_rts >& ../step68_avrada_rts_install.log
+    sudo --preserve-env=PATH make install_rts >& ../step68_avrada_rts_install.log
     check_return_code
 fi
 

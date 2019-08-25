@@ -3,11 +3,11 @@
 # local and generated dirs
 build
 src
-avr25
-avr31
-avr3
-avr35
-avr4
-avr5
-avr51
-avr6
+rts-avr25
+rts-avr31
+rts-avr3
+rts-avr35
+rts-avr4
+rts-avr5
+rts-avr51
+rts-avr6

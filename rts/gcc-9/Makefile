@@ -88,7 +88,8 @@ OBJS = s-bitops.o \
 ALIS = $(ADASRC:.ads=.ali)
 
 # All libraries
-RTS_LIB_LIST := $(patsubst %, %/adalib/$(LIB), $(ARCH_LIST))
+RTS_LIB_LIST := $(patsubst %, rts-%/adalib/$(LIB), $(ARCH_LIST))
+RTS_DIRS := $(patsubst %, rts-%, $(ARCH_LIST))
 
 # Sources do not exist in $(MCU)/adalib but in $(MCU)/adainclude
 vpath %.ads ../adainclude
@@ -131,11 +132,11 @@ RMDIR   = rmdir
 #
 build_rts: $(RTS_LIB_LIST)
 
-%/adalib/$(LIB): MCU = $(patsubst %/adalib/$(LIB),%, $@)
+%/adalib/$(LIB): MCU = $(patsubst rts-%/adalib/$(LIB),%, $@)
 %/adalib/$(LIB): %/adalib %/adainclude
-	$(MAKE) -C $(MCU)/adainclude -f ../../Makefile $(ADASRC)
-	$(MAKE) -C $(MCU)/adalib     -f ../../Makefile $(ALIS) MCU=$(MCU)
-	$(MAKE) -C $(MCU)/adalib     -f ../../Makefile $(LIB) MCU=$(MCU)
+	$(MAKE) -C rts-$(MCU)/adainclude -f ../../Makefile $(ADASRC)
+	$(MAKE) -C rts-$(MCU)/adalib     -f ../../Makefile $(ALIS) MCU=$(MCU)
+	$(MAKE) -C rts-$(MCU)/adalib     -f ../../Makefile $(LIB) MCU=$(MCU)
 
 %/adalib:
 	$(MKDIR) -p $@
@@ -147,6 +148,11 @@ $(LIB): $(OBJS)
 	$(AR) cr $@ $^
 	$(RANLIB) $@
 
+# ADA_COMPILER_CONFIGS := $(patsubst %,--config=Ada,9,%,$$(PREFIX)/bin,GNAT, $(ARCH_LIST))
+ADA_COMPILER_CONFIGS := $(ARCH_LIST:%=--config=Ada,9,%,$$(PREFIX)/bin,GNAT)
+build_compiler_config:
+	gprconfig --batch --target=avr --config=Ada,9,avr25,$(PREFIX)/bin/,GNAT --config=Ada,9,avr3,$(PREFIX)/bin/,GNAT --config=Ada,9,avr31,$(PREFIX)/bin/,GNAT --config=Ada,9,avr35,$(PREFIX)/bin/,GNAT --config=Ada,9,avr4,$(PREFIX)/bin/,GNAT --config=Ada,9,avr5,$(PREFIX)/bin/,GNAT --config=Ada,9,avr51,$(PREFIX)/bin/,GNAT --config=Ada,9,avr6,$(PREFIX)/bin/,GNAT --config=Ada,9,default,$(PREFIX)/bin/,GNAT --config=Asm,9.2.0,,$(PREFIX)/bin/,GCC-ASM --config=Asm2,9.2.0,,$(PREFIX)/bin/,GCC-ASM --config=Asm_Cpp,9.2.0,,$(PREFIX)/bin/,GCC-ASM --config=C,9.2.0,,$(PREFIX)/bin/,GCC
+
 .PRECIOUS: %/adalib %/adainclude
 
 
@@ -155,7 +161,7 @@ $(LIB): $(OBJS)
 #  Clean
 #
 clean_rts:
-	$(RM) -r $(ARCH_LIST)
+	$(RM) -r $(ARCH_LIST) $(RTS_DIRS)
 
 .PHONY: clean_rts
 
@@ -164,13 +170,15 @@ clean_rts:
 #
 #  Install
 #
-install_rts: build_rts uninstall_rts
-	$(CP) -a $(ARCH_LIST) $(RTS_BASE)
+install_rts: build_rts uninstall_rts 
+	$(CP) -a $(RTS_DIRS) $(RTS_BASE)
 	-$(INSTALL) -d $(RTS_BASE)/adainclude
 	-$(INSTALL) -d $(RTS_BASE)/adalib
 	-$(INSTALL) adainclude/system.ads $(RTS_BASE)/adainclude
 	-$(INSTALL) README.gnatlink_inst  $(RTS_BASE)/adainclude
 	-$(INSTALL) README.gprconfig      $(RTS_BASE)/adalib
+
+# mk_rts_dirs: $(RTS_DIRS)
 
 .PHONY: install_rts
 
@@ -184,8 +192,7 @@ uninstall_rts:
 	$(RM) $(RTS_BASE)/ada_object_path
 	$(RM) -r $(RTS_BASE)/adainclude
 	for arch in $(ARCH_LIST); do \
-	   rm -rf $(RTS_BASE)/$$arch/adainclude; \
-	   rm -rf $(RTS_BASE)/$$arch/adalib; \
+	   rm -rf $(RTS_BASE)/rts-$$arch; \
 	done
 
 .PHONY: uninstall_rts
