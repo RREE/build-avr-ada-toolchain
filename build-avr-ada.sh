@@ -63,6 +63,20 @@ case "$OS" in
         WITHMPFR="/mingw";;
 esac
 
+# Check if current user has write privileges to parent of $PREFIX
+PREFIX_PARENT=$(dirname "$PREFIX")
+if test ! -w "$PREFIX_PARENT"; then
+    while true; do
+	read -p "$PREFIX_PARENT is *not* writable by user $USER, continue as $USER? [y/n]" yn
+	case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+	esac
+    done
+fi
+
+
 # add PREFIX/bin to the PATH
 # Be sure to have the local directory very late in your PATH, best at the
 # very end.
@@ -81,7 +95,7 @@ source bin/config.inc
 download_files="yes"
 delete_obj_dirs="no"
 delete_build_dir="yes"
-delete_install_dir="yes"
+delete_install_dir="no"   # Be carefull, will remove *all* software installed in $PREFIX!!!
 build_binutils="yes"
 build_gcc="yes"
 build_mpfr="no"
@@ -245,7 +259,7 @@ if test "x$build_binutils" = "xyes" ; then
     check_return_code
 
     display "Install binutils ...   (log in $AVR_BUILD/step18_bin_install.log)"
-    sudo make install &>$AVR_BUILD/step18_bin_install.log
+    make install &>$AVR_BUILD/step18_bin_install.log
     check_return_code
 fi
 
@@ -327,12 +341,12 @@ if test "$build_gcc" = "yes" ; then
     display "Install GCC ...       (log in $AVR_BUILD/step28_gcc_install.log)"
 
     cd $AVR_BUILD/gcc-obj
-    sudo --preserve-env=PATH make install &>$AVR_BUILD/step28_gcc_install.log
+    make install &>$AVR_BUILD/step28_gcc_install.log
     check_return_code
 
-    display "Adding GCC links..."
-    sudo ln -f $PREFIX/bin/avr-gcc $PREFIX/bin/avr-gnatgcc
-    sudo ln -f $PREFIX/bin/avr-ar $PREFIX/bin/avr-elf-ar
+    display "Adding GCC symlinks..."
+    ln -sf $PREFIX/bin/avr-gcc $PREFIX/bin/avr-gnatgcc
+    ln -sf $PREFIX/bin/avr-ar $PREFIX/bin/avr-elf-ar
 fi
 
 #---------------------------------------------------------------------------
@@ -362,7 +376,7 @@ if test "x$build_libc" = "xyes" ; then
     check_return_code
 
     display "Install AVR-LIBC ...    (log in $AVR_BUILD/step38_libc_install.log)"
-    sudo --preserve-env=PATH make install &>$AVR_BUILD/step38_libc_install.log
+    make install &>$AVR_BUILD/step38_libc_install.log
     check_return_code
 fi
 print_time >> $AVR_BUILD/time_run.log
@@ -390,7 +404,7 @@ if test "x$build_avrdude" = "xyes" ; then
     check_return_code
 
     display "Install avrdude ...    (log in $AVR_BUILD/step48_avrdude_install.log)"
-    sudo --preserve-env=PATH make install &>$AVR_BUILD/step48_avrdude_install.log
+    make install &>$AVR_BUILD/step48_avrdude_install.log
     check_return_code
 fi
 print_time >> $AVR_BUILD/time_run.log
@@ -426,7 +440,7 @@ if test "x$build_avrada" = "xyes" ; then
     display "build AVR-Ada libs ... (log in $AVR_BUILD/step14_avrada_libs.log)"
     make build_libs >& ../step14_avrada_libs.log
     check_return_code
-    sudo --preserve-env=PATH make install_libs >& ../step14_avrada_libs_inst.log
+    make install_libs >& ../step14_avrada_libs_inst.log
     check_return_code
 fi
 
