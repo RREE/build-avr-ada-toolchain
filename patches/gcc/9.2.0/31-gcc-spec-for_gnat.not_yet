@@ -1,0 +1,26 @@
+--- gcc/config/avr/gen-avr-mmcu-specs.c.orig	2019-01-01 13:31:55.000000000 +0100
++++ gcc/config/avr/gen-avr-mmcu-specs.c	2019-08-30 00:37:04.199991015 +0200
+@@ -212,6 +212,23 @@
+            ? "\t%{!mno-absdata: -mabsdata}"
+            : "\t%{mabsdata}");
+ 
++  // avr-gnat specific specs for Ada compilation / the Ada compiler.
++
++  fprintf (f, "*gnat1_n_flash:\n"
++     	  "\t%%{!mn-flash=*:-mn-flash=%d}\n\n", n_flash);
++
++  fprintf (f, "*gnat1_rmw:\n%s\n\n", rmw
++	   ? "\t%{!mno-rmw: -mrmw}"
++	   : "\t%{mrmw}");
++
++  fprintf (f, "*gnat1_errata_skip:\n%s\n\n", errata_skip
++	   ? "\t%{!mno-skip-bug: -mskip-bug}"
++	   : "\t%{!mskip-bug: -mno-skip-bug}");
++
++  fprintf (f, "*gnat1_absdata:\n%s\n\n", absdata
++	   ? "\t%{!mno-absdata: -mabsdata}"
++	   : "\t%{mabsdata}");
++  
+   // avr-gcc specific specs for assembling / the assembler.
+ 
+   fprintf (f, "*asm_arch:\n\t-mmcu=%s\n\n", arch->name);

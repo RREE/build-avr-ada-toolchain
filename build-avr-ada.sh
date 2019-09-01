@@ -46,6 +46,15 @@
 #
 #---------------------------------------------------------------------------
 
+#
+# ! ! ! ! ! !
+#
+# The script assumes write permissions to the installation
+# directory. You can either run the script as root or provide a
+# private installation path of the build user.
+#
+# ! ! ! ! ! !
+#
 BASE_DIR=$PWD
 OS=`uname -s`
 case "$OS" in
@@ -104,7 +113,7 @@ build_gmp="no"
 build_libc="yes"
 build_avradarts="yes"
 build_avrdude="yes"
-build_avrada="yes"
+build_avrada="no"
 
 # The following are advanced options not required for a normal build
 # either delete the build directory completely
@@ -316,6 +325,7 @@ if test "$build_gcc" = "yes" ; then
     ../$FILE_GCC/configure --prefix=$PREFIX \
         --target=avr \
         --enable-languages=ada,c,c++ \
+        --with-avrlibc \
         --with-dwarf2 \
         --disable-nls \
         --disable-libssp \
@@ -427,7 +437,7 @@ if test "x$build_avradarts" = "xyes" ; then
     check_return_code
     
     display "install AVR-Ada RTS ... (log in $AVR_BUILD/step68_avrada_rts_install.log)"
-    sudo --preserve-env=PATH make install_rts >& ../step68_avrada_rts_install.log
+    make install_rts >& ../step68_avrada_rts_install.log
     check_return_code
 fi
 

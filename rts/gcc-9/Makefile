@@ -35,6 +35,7 @@ uninstall: uninstall_rts
 #
 LIBGCC := $(shell avr-gcc -print-libgcc-file-name)
 RTS_BASE := $(dir $(LIBGCC))
+PREFIX := $(abspath $(RTS_BASE)/../../../..)
 
 ###############################################################
 #
@@ -148,10 +149,14 @@ $(LIB): $(OBJS)
 	$(AR) cr $@ $^
 	$(RANLIB) $@
 
-# ADA_COMPILER_CONFIGS := $(patsubst %,--config=Ada,9,%,$$(PREFIX)/bin,GNAT, $(ARCH_LIST))
-ADA_COMPILER_CONFIGS := $(ARCH_LIST:%=--config=Ada,9,%,$$(PREFIX)/bin,GNAT)
+ADA_COMPILER_CONFIGS := $(ARCH_LIST:%=--config=Ada,,%,,GNAT)
 build_compiler_config:
-	gprconfig --batch --target=avr --config=Ada,9,avr25,$(PREFIX)/bin/,GNAT --config=Ada,9,avr3,$(PREFIX)/bin/,GNAT --config=Ada,9,avr31,$(PREFIX)/bin/,GNAT --config=Ada,9,avr35,$(PREFIX)/bin/,GNAT --config=Ada,9,avr4,$(PREFIX)/bin/,GNAT --config=Ada,9,avr5,$(PREFIX)/bin/,GNAT --config=Ada,9,avr51,$(PREFIX)/bin/,GNAT --config=Ada,9,avr6,$(PREFIX)/bin/,GNAT --config=Ada,9,default,$(PREFIX)/bin/,GNAT --config=Asm,9.2.0,,$(PREFIX)/bin/,GCC-ASM --config=Asm2,9.2.0,,$(PREFIX)/bin/,GCC-ASM --config=Asm_Cpp,9.2.0,,$(PREFIX)/bin/,GCC-ASM --config=C,9.2.0,,$(PREFIX)/bin/,GCC
+	gprconfig --batch --target=avr \
+   $(ADA_COMPILER_CONFIGS) \
+   --config=Asm,,,,GCC-ASM \
+   --config=Asm2,,,,GCC-ASM \
+   --config=Asm_Cpp,,,,GCC-ASM \
+   --config=C,,,,GCC
 
 .PRECIOUS: %/adalib %/adainclude
 

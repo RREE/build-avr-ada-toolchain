@@ -1,0 +1,66 @@
+--- gcc/ada/gnatbind.adb.orig	2018-01-11 09:55:25.000000000 +0100
++++ gcc/ada/gnatbind.adb	2019-03-10 14:12:19.136219885 +0100
+@@ -439,6 +439,11 @@
+          then
+             Add_Lib_Search_Dir (Argv (4 .. Argv'Last));
+ 
++         --  -main_does_not_return
++
++         elsif Argv (2 .. Argv'Last) = "main_does_not_return" then
++            Opt.Main_Does_Not_Return := True;
++
+          --  -nostdlib
+ 
+          elsif Argv (2 .. Argv'Last) = "nostdlib" then
+--- gcc/ada/opt.ads.orig	2018-01-11 09:55:25.000000000 +0100
++++ gcc/ada/opt.ads	2019-03-10 14:12:19.140219889 +0100
+@@ -729,6 +729,13 @@
+    --  the flag -gnatN (which is now considered obsolescent, since the GCC
+    --  back end can do a better job of inlining than the front end these days.
+ 
++   Main_Does_Not_Return : Boolean := False;
++   --  GNATBIND
++   --  Set to True if no environment exists. This is typically the
++   --  case in embedded systems without an operating system. The main
++   --  program does not read command line parameters nor does it
++   --  return.
++
+    Full_Path_Name_For_Brief_Errors : Boolean := False;
+    --  PROJECT MANAGER
+    --  When True, in Brief_Output mode, each error message line will start with
+--- gcc/ada/bindgen.adb.orig	2019-01-08 10:54:04.000000000 +0100
++++ gcc/ada/bindgen.adb	2019-08-30 13:52:35.947603694 +0200
+@@ -1700,6 +1700,11 @@
+             WBI ("   function Ada_Main_Program return Integer;");
+          else
+             WBI ("   procedure Ada_Main_Program;");
++            if Opt.Main_Does_Not_Return then
++               WBI ("   pragma Maschine_Attribute (Ada_Main_Program,");
++               WBI ("                              ""OS_main"");");
++               WBI ("   pragma No_Return (Ada_Main_Program);");
++            end if;
+          end if;
+ 
+          Set_String ("   pragma Import (Ada, Ada_Main_Program, """);
+@@ -1811,7 +1816,7 @@
+       --  with a pragma Volatile in order to tell the compiler to preserve
+       --  this variable at any level of optimization.
+ 
+-      if Bind_Main_Program and not CodePeer_Mode then
++      if Bind_Main_Program and not CodePeer_Mode and not Opt.Main_Does_Not_Return then
+          WBI ("      Ensure_Reference : aliased System.Address := " &
+               "Ada_Main_Program_Name'Address;");
+          WBI ("      pragma Volatile (Ensure_Reference);");
+@@ -2430,6 +2435,12 @@
+             end if;
+          end if;
+ 
++         if Opt.Main_Does_Not_Return then
++            WBI ("   pragma Maschine_Attribute (" & Get_Main_Name & ",");
++            WBI ("                              ""OS_main"");");
++            WBI ("   pragma No_Return (" & Get_Main_Name & ");");
++         end if;
++
+          WBI ("   pragma Export (C, " & Get_Main_Name & ", """ &
+            Get_Main_Name & """);");
+       end if;

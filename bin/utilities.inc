@@ -56,8 +56,6 @@ function unpack_package ()
 
 function apply_patches ()
 {
-    set -x
-    
     local PKG="$1"
     local VER="VER_$1"
     local V=${!VER}
