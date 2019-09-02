@@ -4,10 +4,10 @@
           then
              Add_Lib_Search_Dir (Argv (4 .. Argv'Last));
  
-+         --  -main_does_not_return
++         --  -main_no_return
 +
-+         elsif Argv (2 .. Argv'Last) = "main_does_not_return" then
-+            Opt.Main_Does_Not_Return := True;
++         elsif Argv (2 .. Argv'Last) = "main_no_return" then
++            Opt.Main_No_Return := True;
 +
           --  -nostdlib
  
@@ -18,7 +18,7 @@
     --  the flag -gnatN (which is now considered obsolescent, since the GCC
     --  back end can do a better job of inlining than the front end these days.
  
-+   Main_Does_Not_Return : Boolean := False;
++   Main_No_Return : Boolean := False;
 +   --  GNATBIND
 +   --  Set to True if no environment exists. This is typically the
 +   --  case in embedded systems without an operating system. The main
@@ -34,7 +34,7 @@
              WBI ("   function Ada_Main_Program return Integer;");
           else
              WBI ("   procedure Ada_Main_Program;");
-+            if Opt.Main_Does_Not_Return then
++            if Opt.Main_No_Return then
 +               WBI ("   pragma Maschine_Attribute (Ada_Main_Program,");
 +               WBI ("                              ""OS_main"");");
 +               WBI ("   pragma No_Return (Ada_Main_Program);");
@@ -42,12 +42,13 @@
           end if;
  
           Set_String ("   pragma Import (Ada, Ada_Main_Program, """);
-@@ -1811,7 +1816,7 @@
+@@ -1811,7 +1816,8 @@
        --  with a pragma Volatile in order to tell the compiler to preserve
        --  this variable at any level of optimization.
  
 -      if Bind_Main_Program and not CodePeer_Mode then
-+      if Bind_Main_Program and not CodePeer_Mode and not Opt.Main_Does_Not_Return then
++      if Bind_Main_Program and not CodePeer_Mode and not Opt.Main_No_Return
++      then
           WBI ("      Ensure_Reference : aliased System.Address := " &
                "Ada_Main_Program_Name'Address;");
           WBI ("      pragma Volatile (Ensure_Reference);");
@@ -55,7 +56,7 @@
              end if;
           end if;
  
-+         if Opt.Main_Does_Not_Return then
++         if Opt.Main_No_Return then
 +            WBI ("   pragma Maschine_Attribute (" & Get_Main_Name & ",");
 +            WBI ("                              ""OS_main"");");
 +            WBI ("   pragma No_Return (" & Get_Main_Name & ");");
