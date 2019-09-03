@@ -179,9 +179,9 @@ install_rts: build_rts uninstall_rts
 	$(CP) -a $(RTS_DIRS) $(RTS_BASE)
 	-$(INSTALL) -d $(RTS_BASE)/adainclude
 	-$(INSTALL) -d $(RTS_BASE)/adalib
-	-$(INSTALL) adainclude/system.ads $(RTS_BASE)/adainclude
-	-$(INSTALL) README.gnatlink_inst  $(RTS_BASE)/adainclude
-	-$(INSTALL) README.gprconfig      $(RTS_BASE)/adalib
+	-$(INSTALL) -p adainclude/system.ads $(RTS_BASE)/adainclude
+	-$(INSTALL) -p README.gnatlink_inst  $(RTS_BASE)/adainclude
+	-$(INSTALL) -p README.gprconfig      $(RTS_BASE)/adalib
 
 # mk_rts_dirs: $(RTS_DIRS)
 
