@@ -42,6 +42,24 @@ function check_return_code () {
     fi
 }
 
+# Check if current user has write privileges at the specified DIR
+function check_privileges ()
+{
+    local DIR="$1"
+    echo "DIR = $DIR"
+    
+    if test ! -w "$DIR"; then
+    while true; do
+	read -p "$DIR is *not* writable by user $USER, continue as $USER? [y/n]" yn
+	case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes [y] or no [n].";;
+	esac
+    done
+    fi
+}
+
 function unpack_package ()
 {
     local PKG="$1_TAR"

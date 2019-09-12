@@ -8,7 +8,7 @@
 --                              (AVR Version)                               --
 --                                                                          --
 --          Copyright (C) 1992-2007 Free Software Foundation, Inc.          --
---               Copyright (C) 2004, 2010, 2012, 2015 Rolf Ebert            --
+--          Copyright (C) 2004, 2010, 2012, 2015, 2019 Rolf Ebert           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -59,6 +59,9 @@ package System is
    --  Note that we take advantage of the implementation permission to make
    --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada
    --  2005, this is Pure in any case (AI-362).
+
+   pragma No_Elaboration_Code_All;
+   --  Allow the use of that restriction in units that WITH this unit
 
    type Name is (SYSTEM_NAME_GNAT);
    System_Name : constant Name := SYSTEM_NAME_GNAT;
@@ -184,6 +187,7 @@ private
    Stack_Check_Probes        : constant Boolean := False;
    Stack_Check_Limits        : constant Boolean := False;
    Support_Aggregates        : constant Boolean := True;
+   Support_Atomic_Primitives : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
    Support_Long_Shifts       : constant Boolean := True;
@@ -211,7 +215,8 @@ private
    --    The routine __gnat_handler_installed is not imported
 
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
+   Frontend_Exceptions       : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
    GCC_ZCX_Support           : constant Boolean := False;
 
 end System;

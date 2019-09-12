@@ -53,7 +53,6 @@ ADASRC = system.ads \
    s-memory.ads s-memory.adb \
    s-gccbui.ads \
    interfac.ads i-c.ads \
-   i-cstrin.ads i-cstrin.adb \
    s-intimg.ads \
    ada.ads \
    unchconv.ads a-unccon.ads \
@@ -63,6 +62,9 @@ ADASRC = system.ads \
    a-tags.ads a-tags.adb \
    gnat.ads g-souinf.ads
 
+#   
+
+#   i-cstrin.ads i-cstrin.adb \
 #   s-htable.ads s-htable.adb
 #   a-stream.ads
 #   s-finroo.ads s-finroo.adb a-finali.ads a-finali.adb
@@ -177,11 +179,16 @@ clean_rts:
 #
 install_rts: build_rts uninstall_rts 
 	$(CP) -a $(RTS_DIRS) $(RTS_BASE)
-	-$(INSTALL) -d $(RTS_BASE)/adainclude
+	echo "rts-avr5/adainclude" > $(RTS_BASE)/ada_source_path
 	-$(INSTALL) -d $(RTS_BASE)/adalib
-	-$(INSTALL) -p adainclude/system.ads $(RTS_BASE)/adainclude
-	-$(INSTALL) -p README.gnatlink_inst  $(RTS_BASE)/adainclude
 	-$(INSTALL) -p README.gprconfig      $(RTS_BASE)/adalib
+
+#	-$(INSTALL) -d $(RTS_BASE)/adainclude
+# -$(INSTALL) -p adainclude/system.ads   $(RTS_BASE)/adainclude
+# -$(INSTALL) -p adainclude/s-parame.ads $(RTS_BASE)/adainclude
+# -$(INSTALL) -p adainclude/s-secsta.ads $(RTS_BASE)/adainclude
+# -$(INSTALL) -p adainclude/s-stoele.ads $(RTS_BASE)/adainclude
+# -$(INSTALL) -p README.gnatlink_inst  $(RTS_BASE)/adainclude
 
 # mk_rts_dirs: $(RTS_DIRS)
 

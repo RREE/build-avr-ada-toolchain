@@ -1,0 +1,188 @@
+The new minimal binder option ("-minimal") suppresses the generation of
+binder objects that are not strictly required for program operation.
+This option is suitable for space constrained applications and comes
+with the restriction that programs can no longer be debugged using GDB.
+ 
+Tested on x86_64-pc-linux-gnu, committed on trunk
+ 
+2019-07-11  Patrick Bernardi  <bernardi@adacore.com>
+ 
+gcc/ada/
+ 
+        * bindgen.adb (Gen_Main): Do not generate a reference to
+        Ada_Main_Program_Name when the Minimal_Binder flag is set.
+        (Gen_Output_File_Ada): Do not output GNAT_Version and
+        Ada_Main_Program_Name info if Minimal_Binder flag is set.
+        * bindusg.adb: Add documentation for new -minimal switch.
+        * gnatbind.adb (Scan_Bind_Arg): Scan -minimal switch.
+        * opt.ads: Add new global flag Minimal_Binder to indicate if the
+        binder should not produce global variables.
+        * doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+        Update documentation with new binder -minimal switch.
+        * gnat_ugn.texi: Regenerate.
+--- gcc/ada/bindgen.adb.orig    2019-01-08 10:54:04.000000000 +0100
++++ gcc/ada/bindgen.adb 2019-09-05 20:24:00.093730351 +0200
+@@ -1811,7 +1811,11 @@
+       --  with a pragma Volatile in order to tell the compiler to preserve
+       --  this variable at any level of optimization.
+
+-      if Bind_Main_Program and not CodePeer_Mode then
++      if Bind_Main_Program
++        and then not Minimal_Binder
++        and then not CodePeer_Mode
++        and then not Generate_C_Code
++      then
+          WBI ("      Ensure_Reference : aliased System.Address := " &
+               "Ada_Main_Program_Name'Address;");
+          WBI ("      pragma Volatile (Ensure_Reference);");
+@@ -2350,25 +2354,27 @@
+          --  program uses two Ada libraries). Also zero terminate the string
+          --  so that its end can be found reliably at run time.
+
+-         WBI ("");
+-         WBI ("   GNAT_Version : constant String :=");
+-         WBI ("                    """ & Ver_Prefix &
+-                                   Gnat_Version_String &
+-                                   """ & ASCII.NUL;");
+-         WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
++         if not Minimal_Binder then
++            WBI ("");
++            WBI ("   GNAT_Version : constant String :=");
++            WBI ("                    """ & Ver_Prefix &
++                                      Gnat_Version_String &
++                                      """ & ASCII.NUL;");
++            WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
+
+-         WBI ("");
+-         Set_String ("   Ada_Main_Program_Name : constant String := """);
+-         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
++            WBI ("");
++            Set_String ("   Ada_Main_Program_Name : constant String := """);
++            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+
+-         Set_Main_Program_Name;
+-         Set_String (""" & ASCII.NUL;");
++            Set_Main_Program_Name;
++            Set_String (""" & ASCII.NUL;");
+
+-         Write_Statement_Buffer;
++            Write_Statement_Buffer;
+
+-         WBI
+-           ("   pragma Export (C, Ada_Main_Program_Name, " &
+-            """__gnat_ada_main_program_name"");");
++            WBI
++              ("   pragma Export (C, Ada_Main_Program_Name, " &
++               """__gnat_ada_main_program_name"");");
++         end if;
+       end if;
+
+       WBI ("");
+--- gcc/ada/bindusg.adb    2019-01-08 10:54:04.000000000 +0100
++++ gcc/ada/bindusg.adb 2019-09-05 20:12:21.037158925 +0200
+@@ -168,6 +168,12 @@
+         ("  -mnnn     Limit number of detected errors/warnings to nnn "
+          & "(1-999999)");
+
++      --  Line for -minimal switch
++
++      Write_Line
++        ("  -minimal  Generate binder file suitable for space-constrained "
++         & "applications");
++
+       --  Line for -M switch
+
+       Write_Line
+--- gcc/ada/doc/gnat_ugn/building_executable_programs_with_gnat.rst
++++ gcc/ada/doc/gnat_ugn/building_executable_programs_with_gnat.rst
+@@ -6475,7 +6475,6 @@ be presented in subsequent sections.
+   Rename generated main program from main to xyz. This option is
+   supported on cross environments only.
+ 
+-
+   .. index:: -m  (gnatbind)
+ 
+ :switch:`-m{n}`
+@@ -6488,7 +6487,17 @@ be presented in subsequent sections.
+   A value of zero means that no limit is enforced. The equal
+   sign is optional.
+ 
++  .. index:: -minimal  (gnatbind)
++
++:switch:`-minimal`
++  Generate a binder file suitable for space-constrained applications. When
++  active, binder-generated objects not required for program operation are no
++  longer generated. **Warning:** this option comes with the following
++  limitations:
++
++  * Debugging will not work;
++  * Programs using GNAT.Compiler_Version will not link.
+ 
+   .. index:: -n  (gnatbind)
+ 
+ 
+--- gcc/ada/gnat_ugn.texi
++++ gcc/ada/gnat_ugn.texi
+@@ -15892,7 +15892,26 @@ limit, then a message is output and the bind is abandoned.
+ A value of zero means that no limit is enforced. The equal
+ sign is optional.
+ 
++@geindex -minimal (gnatbind)
++
++@item @code{-minimal}
++
++Generate a binder file suitable for space-constrained applications. When
++active, binder-generated objects not required for program operation are no
++longer generated. @strong{Warning:} this option comes with the following
++limitations:
++
++
++@itemize *
++
++@item 
++Debugging will not work;
++
++@item 
++Programs using GNAT.Compiler_Version will not link.
++@end itemize
++
+ @geindex -n (gnatbind)
+ 
+ @item @code{-n}
+ 
+--- gcc/ada/gnatbind.adb
++++ gcc/ada/gnatbind.adb
+@@ -474,7 +474,18 @@ procedure Gnatbind is
+ 
+             Mapping_File := new String'(Argv (4 .. Argv'Last));
+ 
++         --  -minimal
++
++         elsif Argv (2 .. Argv'Last) = "minimal" then
++            if not Is_Cross_Compiler then
++               Write_Line
++                 ("gnatbind: -minimal not expected to be used on native " &
++                  "platforms");
++            end if;
++
++            Opt.Minimal_Binder := True;
++
+          --  -Mname
+ 
+          elsif Argv'Length >= 3 and then Argv (2) = 'M' then
+ 
+--- gcc/ada/opt.ads
++++ gcc/ada/opt.ads
+@@ -1115,6 +1115,12 @@ package Opt is
+    --  Maximum number of processes that should be spawned to carry out
+    --  compilations.
+ 
++   Minimal_Binder : Boolean := False;
++   --  GNATBIND
++   --  Set to True to suppress the generation of objects by the binder that
++   --  are not strictly required for a program to run. Intended for ZFP
++   --  applications that have tight memory constraints.
++
+    Minimal_Recompilation : Boolean := False;
+    --  GNATMAKE
+    --  Set to True if minimal recompilation mode requested

@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                                  A D A                                   --
+--                       A D A . C O N T A I N E R S                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -13,8 +13,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada is
+--  This is the AVR version without support for exceptions
+
+package Ada.Containers is
    pragma Pure;
-   pragma No_Elaboration_Code_All;
-   --  Allow the use of that restriction in units that WITH this unit
-end Ada;
+
+   type Hash_Type is mod 2**32;
+   type Count_Type is range 0 .. 2**31 - 1;
+
+   --  Capacity_Error : exception;
+
+end Ada.Containers;

@@ -1,0 +1,27 @@
+--- gcc/ada/bindgen.adb.orig	2019-01-08 10:54:04.000000000 +0100
++++ gcc/ada/bindgen.adb	2019-08-30 13:52:35.947603694 +0200
+@@ -1700,6 +1700,11 @@
+             WBI ("   function Ada_Main_Program return Integer;");
+          else
+             WBI ("   procedure Ada_Main_Program;");
++            if Minimal_Binder then
++               WBI ("   pragma Maschine_Attribute (Ada_Main_Program,");
++               WBI ("                              ""OS_main"");");
++               WBI ("   pragma No_Return (Ada_Main_Program);");
++            end if;
+          end if;
+ 
+          Set_String ("   pragma Import (Ada, Ada_Main_Program, """);
+@@ -2430,6 +2435,12 @@
+             end if;
+          end if;
+ 
++         if Minimal_Binder then
++            WBI ("   pragma Maschine_Attribute (" & Get_Main_Name & ",");
++            WBI ("                              ""OS_main"");");
++            WBI ("   pragma No_Return (" & Get_Main_Name & ");");
++         end if;
++
+          WBI ("   pragma Export (C, " & Get_Main_Name & ", """ &
+            Get_Main_Name & """);");
+       end if;

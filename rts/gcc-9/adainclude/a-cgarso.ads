@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                                  A D A                                   --
+--    A D A . C O N T A I N E R S . G E N E R I C _ A R R A Y _ S O R T     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -13,8 +13,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada is
-   pragma Pure;
-   pragma No_Elaboration_Code_All;
-   --  Allow the use of that restriction in units that WITH this unit
-end Ada;
+generic
+   type Index_Type is (<>);
+   type Element_Type is private;
+   type Array_Type is array (Index_Type range <>) of Element_Type;
+
+   with function "<" (Left, Right : Element_Type)
+      return Boolean is <>;
+
+procedure Ada.Containers.Generic_Array_Sort (Container : in out Array_Type);
+
+pragma Pure (Ada.Containers.Generic_Array_Sort);

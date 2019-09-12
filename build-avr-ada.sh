@@ -72,19 +72,13 @@ case "$OS" in
         WITHMPFR="/mingw";;
 esac
 
+source bin/utilities.inc
+source bin/versions.inc
+source bin/config.inc
+
 # Check if current user has write privileges to parent of $PREFIX
 PREFIX_PARENT=$(dirname "$PREFIX")
-if test ! -w "$PREFIX_PARENT"; then
-    while true; do
-	read -p "$PREFIX_PARENT is *not* writable by user $USER, continue as $USER? [y/n]" yn
-	case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) exit;;
-            * ) echo "Please answer yes or no.";;
-	esac
-    done
-fi
-
+check_privileges "$PREFIX_PARENT"
 
 # add PREFIX/bin to the PATH
 # Be sure to have the local directory very late in your PATH, best at the
@@ -97,22 +91,20 @@ export PATH="${PREFIX}/bin:${PATH}"
 # export CPATH=/mingw/include
 # !! unset CPATH before compiling avr-libc !!
 
-source bin/versions.inc
-source bin/config.inc
 
 # actions:
 download_files="yes"
 delete_obj_dirs="no"
 delete_build_dir="yes"
 delete_install_dir="no"   # Be carefull, will remove *all* software installed in $PREFIX!!!
-build_binutils="yes"
+build_binutils="no"
 build_gcc="yes"
 build_mpfr="no"
 build_mpc="no"
 build_gmp="no"
 build_libc="yes"
 build_avradarts="yes"
-build_avrdude="yes"
+build_avrdude="no"
 build_avrada="no"
 
 # The following are advanced options not required for a normal build
@@ -136,8 +128,6 @@ export CC
 #echo "Please adjust the variables above to your environment."
 #echo "No need to change anything below."
 #exit
-
-source bin/utilities.inc
 
 #---------------------------------------------------------------------------
 # build script
