@@ -140,17 +140,19 @@ echo "GCC AVR-Ada build script: all output is saved in log files"
 echo "--------------------------------------------------------------"
 echo
 
+GCC_MIN_VERSION='4.7.0'
 GCC_VERSION=`$CC -dumpversion`
 # GCC_MAJOR=`echo $GCC_VERSION | awk -F. ' { print $1; } '`
 # GCC_MINOR=`echo $GCC_VERSION | awk -F. ' { print $2; } '`
 # GCC_PATCH=`echo $GCC_VERSION | awk -F. ' { print $3; } '`
 
-if [[ "$GCC_VERSION" < "4.7.0" ]] ; then  # string comparison (?)
-    echo "($GCC_VERSION) is too old"
-    echo "AVR-Ada V2 requires at least gcc-8 as build compiler"
-    exit 2
+printf -v versions '%s\n%s' "$GCC_VERSION" "$GCC_MIN_VERSION"
+if [[ $versions = "$(sort -V <<< "$versions")" ]]; then
+	echo "($GCC_VERSION) is too old"
+	echo "AVR-Ada V2 requires at least gcc-8 as build compiler"
+	exit 2
 else
-    echo "Found native compiler gcc-"$GCC_VERSION
+	echo "Found native compiler gcc-"$GCC_VERSION
 fi
 
 if test "x$delete_build_dir" = "xyes" ; then
