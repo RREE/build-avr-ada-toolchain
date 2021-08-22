@@ -23,6 +23,21 @@ function download_package()
 }
 
 
+function download_package_sourceforge()
+{
+    local PKG="$1_TAR"
+    local PKG_MIRROR="$1_MIRROR"
+    
+    if [ ! -f $DOWNLOAD/${!PKG} ]; then
+        display "  >> Downloading ${!PKG}..."
+        wget --continue --directory-prefix=$DOWNLOAD -o $DOWNLOAD/${!PKG} ${!PKG_MIRROR}
+
+        check_return_code
+    else
+        display "  (x) Already have ${!PKG}"
+    fi
+}
+
 header "downloading archives"
 
 download_package "BINUTILS"
@@ -32,4 +47,4 @@ download_package "MPC"
 download_package "MPFR"
 download_package "LIBC"
 download_package "AVRDUDE"
-download_package "AVRADA"
+download_package_sourceforge "AVRADA"
