@@ -306,6 +306,10 @@ if test "x$build_avrada" = "xyes" ; then
     #########################################################################
     header "Building AVR-Ada libraries"
 
+    cd $AVR_BUILD
+
+    unpack_package AVRADA
+
     cd $AVR_BUILD/$FILE_AVRADA
 
     display "build AVR-Ada libs ... (log in $AVR_BUILD/step14_avrada_libs.log)"
