@@ -3,8 +3,7 @@
 source base.sh
 
 #actions
-build_gcc="yes"
-
+build_avrada="yes"
 
 source actions.sh
 

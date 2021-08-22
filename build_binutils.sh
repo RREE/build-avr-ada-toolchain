@@ -3,7 +3,7 @@
 source base.sh
 
 #actions
-build_gcc="yes"
+build_binutils="yes"
 
 
 source actions.sh
