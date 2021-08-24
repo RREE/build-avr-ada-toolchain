@@ -5,11 +5,11 @@
 
 VER_BINUTILS=2.32
 VER_GCC=9.2.0
-VER_MPFR=4.0.2
+VER_MPFR=4.1.0
 VER_MPC=1.1.0
 VER_GMP=6.1.2
 VER_LIBC=2.0.0
-VER_AVRADA=1.9.0
+VER_AVRADA=1.2.2
 VER_AVRDUDE=6.3
 
 FILE_BINUTILS="binutils-$VER_BINUTILS"
@@ -51,4 +51,4 @@ AVRDUDE_MIRROR="http://download.savannah.gnu.org/releases/avrdude"
 
 AVRADA_TAR="avr-ada-$VER_AVRADA.tar.bz2"
 AVRADA_X=j
-AVRADA_MIRROR="https://sourceforge.net/projects/avr-ada/files/avr-ada/Source%20Dist/avr-ada-1.2.2.tar.bz2/download"
+AVRADA_MIRROR="https://downloads.sourceforge.net/project/avr-ada/avr-ada/Source%20Dist"

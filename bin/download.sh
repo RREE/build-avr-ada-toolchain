@@ -22,7 +22,6 @@ function download_package()
     fi
 }
 
-
 header "downloading archives"
 
 download_package "BINUTILS"
@@ -32,3 +31,4 @@ download_package "MPC"
 download_package "MPFR"
 download_package "LIBC"
 download_package "AVRDUDE"
+download_package "AVRADA"
